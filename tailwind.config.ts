@@ -19,9 +19,11 @@ export default {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        surface: "hsl(var(--pixel-surface))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
+          glow: "hsl(var(--pixel-primary-glow))",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
@@ -57,6 +59,21 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        // Pixel-specific colors
+        pixel: {
+          primary: "hsl(var(--pixel-primary))",
+          secondary: "hsl(var(--pixel-secondary))",
+          accent: "hsl(var(--pixel-accent))",
+          warning: "hsl(var(--pixel-warning))",
+          error: "hsl(var(--pixel-error))",
+          xp: "hsl(var(--pixel-xp))",
+          health: "hsl(var(--pixel-health))",
+          mana: "hsl(var(--pixel-mana))",
+          glow: "hsl(var(--pixel-glow))",
+        },
+      },
+      fontFamily: {
+        pixel: ['Press Start 2P', 'cursive'],
       },
       borderRadius: {
         lg: "var(--radius)",

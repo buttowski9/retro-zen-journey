@@ -2,95 +2,91 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* Pixel-perfect retro gaming design system */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
-
-    --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Core pixel gaming palette */
+    --pixel-bg: 20 20% 8%;
+    --pixel-surface: 25 25% 12%;
+    --pixel-foreground: 120 100% 95%;
+    
+    /* Gaming accent colors */
+    --pixel-primary: 120 100% 50%;
+    --pixel-primary-glow: 120 100% 60%;
+    --pixel-secondary: 200 100% 50%;
+    --pixel-accent: 60 100% 50%;
+    --pixel-warning: 30 100% 50%;
+    --pixel-error: 0 100% 50%;
+    
+    /* UI element colors */
+    --pixel-border: 120 50% 30%;
+    --pixel-border-bright: 120 100% 40%;
+    --pixel-button: 120 80% 25%;
+    --pixel-button-hover: 120 100% 35%;
+    --pixel-input: 25 25% 15%;
+    
+    /* XP and progress colors */
+    --pixel-xp: 120 100% 50%;
+    --pixel-xp-bg: 120 30% 20%;
+    --pixel-health: 0 100% 50%;
+    --pixel-mana: 240 100% 50%;
+    
+    /* Game UI effects */
+    --pixel-glow: 120 100% 50%;
+    --pixel-shadow: 0 0% 0%;
+    
+    /* Semantic tokens mapped to pixel theme */
+    --background: var(--pixel-bg);
+    --foreground: var(--pixel-foreground);
+    --card: var(--pixel-surface);
+    --card-foreground: var(--pixel-foreground);
+    --popover: var(--pixel-surface);
+    --popover-foreground: var(--pixel-foreground);
+    --primary: var(--pixel-primary);
+    --primary-foreground: var(--pixel-bg);
+    --secondary: var(--pixel-button);
+    --secondary-foreground: var(--pixel-foreground);
+    --muted: var(--pixel-surface);
+    --muted-foreground: 120 30% 70%;
+    --accent: var(--pixel-accent);
+    --accent-foreground: var(--pixel-bg);
+    --destructive: var(--pixel-error);
+    --destructive-foreground: var(--pixel-foreground);
+    --border: var(--pixel-border);
+    --input: var(--pixel-input);
+    --ring: var(--pixel-primary);
+    --radius: 0px; /* Sharp pixel-perfect corners */
+    
+    /* Sidebar tokens for pixel theme */
+    --sidebar-background: var(--pixel-surface);
+    --sidebar-foreground: var(--pixel-foreground);
+    --sidebar-primary: var(--pixel-primary);
+    --sidebar-primary-foreground: var(--pixel-bg);
+    --sidebar-accent: var(--pixel-button);
+    --sidebar-accent-foreground: var(--pixel-foreground);
+    --sidebar-border: var(--pixel-border);
+    --sidebar-ring: var(--pixel-primary);
+    
+    /* Custom gradients */
+    --gradient-pixel-glow: linear-gradient(135deg, hsl(var(--pixel-primary)), hsl(var(--pixel-primary-glow)));
+    --gradient-xp: linear-gradient(90deg, hsl(var(--pixel-xp)), hsl(var(--pixel-accent)));
+    --gradient-bg: linear-gradient(180deg, hsl(var(--pixel-bg)), hsl(var(--pixel-surface)));
+    
+    /* Shadows for depth */
+    --shadow-pixel: 4px 4px 0px hsl(var(--pixel-shadow));
+    --shadow-pixel-lg: 6px 6px 0px hsl(var(--pixel-shadow));
+    --shadow-glow: 0 0 20px hsl(var(--pixel-glow) / 0.5);
+    
+    /* Animation timings */
+    --transition-pixel: all 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --transition-bounce: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Dark mode uses the same pixel theme - it's already dark! */
+    --background: var(--pixel-bg);
+    --foreground: var(--pixel-foreground);
   }
 }
 
@@ -98,8 +94,162 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
+  
   body {
     @apply bg-background text-foreground;
+    font-family: 'Press Start 2P', cursive;
+    font-size: 12px;
+    line-height: 1.6;
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+  }
+  
+  /* Pixel-perfect scrollbars */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--pixel-surface));
+    border: 2px solid hsl(var(--pixel-border));
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--pixel-primary));
+    border: 2px solid hsl(var(--pixel-border));
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--pixel-primary-glow));
+  }
+}
+
+@layer components {
+  /* Pixel button styles */
+  .btn-pixel {
+    @apply relative border-2 border-solid transition-all duration-75;
+    box-shadow: var(--shadow-pixel);
+    font-family: 'Press Start 2P', cursive;
+    text-transform: uppercase;
+  }
+  
+  .btn-pixel:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px hsl(var(--pixel-shadow));
+  }
+  
+  .btn-pixel:active {
+    transform: translate(4px, 4px);
+    box-shadow: none;
+  }
+  
+  /* Pixel input styles */
+  .input-pixel {
+    @apply border-2 bg-input text-foreground;
+    border-color: hsl(var(--pixel-border));
+    box-shadow: inset 2px 2px 0px hsl(var(--pixel-shadow) / 0.3);
+    font-family: 'Press Start 2P', cursive;
+  }
+  
+  .input-pixel:focus {
+    border-color: hsl(var(--pixel-primary));
+    box-shadow: inset 2px 2px 0px hsl(var(--pixel-shadow) / 0.3), 0 0 0 2px hsl(var(--pixel-primary) / 0.2);
+  }
+  
+  /* XP Bar animation */
+  .xp-fill {
+    background: var(--gradient-xp);
+    animation: pulse-glow 2s ease-in-out infinite alternate;
+  }
+  
+  @keyframes pulse-glow {
+    from { box-shadow: inset 0 0 10px hsl(var(--pixel-primary) / 0.5); }
+    to { box-shadow: inset 0 0 20px hsl(var(--pixel-primary) / 0.8); }
+  }
+  
+  /* Pixel card with game border */
+  .card-pixel {
+    @apply bg-card border-2;
+    border-color: hsl(var(--pixel-border));
+    box-shadow: var(--shadow-pixel);
+  }
+  
+  /* Game HUD style */
+  .hud-element {
+    @apply bg-surface/90 border-2 backdrop-blur-sm;
+    border-color: hsl(var(--pixel-border-bright));
+    box-shadow: var(--shadow-pixel), var(--shadow-glow);
+  }
+  
+  /* Pixel perfect typography */
+  .text-pixel-xl {
+    font-size: 16px;
+    line-height: 1.2;
+  }
+  
+  .text-pixel-lg {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+  
+  .text-pixel {
+    font-size: 12px;
+    line-height: 1.4;
+  }
+  
+  .text-pixel-sm {
+    font-size: 10px;
+    line-height: 1.5;
+  }
+  
+  /* Achievement notification */
+  .achievement-popup {
+    @apply fixed top-4 right-4 z-50;
+    animation: slideInRight 0.5s ease-out, fadeOut 0.5s ease-in 2.5s forwards;
+  }
+  
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+}
+
+@layer utilities {
+  /* Pixel animations */
+  .animate-pixel-bounce {
+    animation: pixelBounce 0.6s ease-in-out;
+  }
+  
+  .animate-level-up {
+    animation: levelUp 1s ease-out;
+  }
+  
+  .animate-pixel-shake {
+    animation: pixelShake 0.5s ease-in-out;
+  }
+  
+  @keyframes pixelBounce {
+    0%, 20%, 53%, 80%, 100% { transform: translateY(0px); }
+    40%, 43% { transform: translateY(-15px); }
+    70% { transform: translateY(-7px); }
+    90% { transform: translateY(-2px); }
+  }
+  
+  @keyframes levelUp {
+    0% { transform: scale(1) rotate(0deg); opacity: 1; }
+    50% { transform: scale(1.2) rotate(10deg); opacity: 0.8; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  
+  @keyframes pixelShake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-2px); }
+    20%, 40%, 60%, 80% { transform: translateX(2px); }
   }
 }
