@@ -94,7 +94,7 @@ const Dashboard = () => {
         {/* Header with Character */}
         <div className="text-center space-y-2">
           <div className="flex items-center justify-center gap-3">
-            <PixelCharacter state="walking" size="md" />
+            <PixelCharacter size="md" />
             <div>
               <h1 className="text-pixel-lg font-pixel text-primary">QUEST DASHBOARD</h1>
               <p className="text-pixel-sm text-muted-foreground font-pixel">

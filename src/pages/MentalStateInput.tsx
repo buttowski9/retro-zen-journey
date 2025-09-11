@@ -93,7 +93,7 @@ const MentalStateInput = () => {
         {/* Header with Character */}
         <PixelCard className="text-center p-4 hud-element">
           <div className="flex items-center justify-center gap-3 mb-3">
-            <PixelCharacter state="thinking" size="md" autoAnimate={false} />
+            <PixelCharacter size="md" />
             <div>
               <h1 className="text-pixel-lg font-pixel text-primary">
                 TELL ME ABOUT YOURSELF
@@ -208,7 +208,7 @@ const MentalStateInput = () => {
 
         {currentStep === 'complete' && (
           <PixelCard className="p-6 text-center hud-element">
-            <PixelCharacter state="happy" size="lg" autoAnimate={false} />
+            <PixelCharacter size="lg" />
             <h2 className="text-pixel-lg font-pixel text-primary mt-4 mb-2">
               PROFILE COMPLETE!
             </h2>

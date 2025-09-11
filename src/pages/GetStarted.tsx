@@ -24,7 +24,7 @@ const GetStarted = () => {
         {/* Welcome Header */}
         <PixelCard className="text-center p-6 hud-element">
           <div className="flex items-center justify-center gap-4 mb-4">
-            <PixelCharacter state="happy" size="lg" />
+            <PixelCharacter size="lg" />
             <div className="space-y-2">
               <h1 className="text-pixel-lg font-pixel text-primary">
                 WELCOME TO

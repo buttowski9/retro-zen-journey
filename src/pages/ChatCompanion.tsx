@@ -128,7 +128,7 @@ const ChatCompanion = () => {
         {/* Header */}
         <div className="p-4 hud-element border-b-2 border-primary">
           <div className="flex items-center gap-3">
-            <PixelCharacter state="thinking" size="md" />
+            <PixelCharacter size="md" />
             <div className="flex-1">
               <h1 className="text-pixel font-pixel text-primary">PIXELPAL</h1>
               <p className="text-pixel-sm text-muted-foreground font-pixel">

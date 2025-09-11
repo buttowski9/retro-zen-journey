@@ -53,7 +53,7 @@ const Profile = () => {
         {/* Header with Character */}
         <PixelCard className="p-4 hud-element">
           <div className="flex items-center gap-3">
-            <PixelCharacter state="happy" size="md" />
+            <PixelCharacter size="md" />
             <div className="flex-1">
               <h1 className="text-pixel-lg font-pixel text-primary">PLAYER PROFILE</h1>
               <p className="text-pixel-sm text-muted-foreground font-pixel">

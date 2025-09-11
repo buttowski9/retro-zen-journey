@@ -41,7 +41,7 @@ const Home = () => {
           <PixelCard className="p-8 relative overflow-hidden bg-surface/90 backdrop-blur-sm">
             <div className="relative z-10">
               <div className="flex items-center justify-center gap-4 mb-4">
-                <PixelCharacter state="happy" size="lg" />
+                <PixelCharacter size="lg" />
               </div>
               
               <div className="space-y-4">
