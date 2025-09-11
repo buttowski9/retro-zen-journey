@@ -6,35 +6,35 @@
 
 @layer base {
   :root {
-    /* Core pixel gaming palette */
-    --pixel-bg: 20 20% 8%;
-    --pixel-surface: 25 25% 12%;
-    --pixel-foreground: 120 100% 95%;
+    /* Warm cozy pixel gaming palette */
+    --pixel-bg: 20 25% 8%;
+    --pixel-surface: 25 20% 12%;
+    --pixel-foreground: 35 15% 85%;
     
-    /* Gaming accent colors */
-    --pixel-primary: 120 100% 50%;
-    --pixel-primary-glow: 120 100% 60%;
-    --pixel-secondary: 200 100% 50%;
-    --pixel-accent: 60 100% 50%;
-    --pixel-warning: 30 100% 50%;
-    --pixel-error: 0 100% 50%;
+    /* Warm gaming accent colors */
+    --pixel-primary: 25 65% 55%;        /* Warm brown */
+    --pixel-primary-glow: 35 70% 65%;   /* Lighter brown */
+    --pixel-secondary: 45 35% 45%;      /* Beige */
+    --pixel-accent: 35 85% 65%;         /* Warm orange */
+    --pixel-warning: 40 90% 60%;        /* Golden yellow */
+    --pixel-error: 10 85% 55%;          /* Warm red */
     
     /* UI element colors */
-    --pixel-border: 120 50% 30%;
-    --pixel-border-bright: 120 100% 40%;
-    --pixel-button: 120 80% 25%;
-    --pixel-button-hover: 120 100% 35%;
-    --pixel-input: 25 25% 15%;
+    --pixel-border: 25 40% 25%;
+    --pixel-border-bright: 35 50% 35%;
+    --pixel-button: 25 30% 20%;
+    --pixel-button-hover: 35 40% 30%;
+    --pixel-input: 20 15% 10%;
     
     /* XP and progress colors */
-    --pixel-xp: 120 100% 50%;
-    --pixel-xp-bg: 120 30% 20%;
-    --pixel-health: 0 100% 50%;
-    --pixel-mana: 240 100% 50%;
+    --pixel-xp: 35 85% 65%;             /* Warm orange for XP */
+    --pixel-xp-bg: 25 30% 15%;
+    --pixel-health: 10 75% 60%;         /* Warm red for health */
+    --pixel-mana: 200 40% 50%;          /* Muted blue for mana */
     
     /* Game UI effects */
-    --pixel-glow: 120 100% 50%;
-    --pixel-shadow: 0 0% 0%;
+    --pixel-glow: 35 85% 65%;
+    --pixel-shadow: 15 20% 5%;
     
     /* Semantic tokens mapped to pixel theme */
     --background: var(--pixel-bg);

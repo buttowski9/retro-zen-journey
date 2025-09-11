@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { PixelButton } from '@/components/ui/pixel-button';
 import { PixelCard, PixelCardContent, PixelCardHeader, PixelCardTitle } from '@/components/ui/pixel-card';
 import PixelNavigation from '@/components/pixel/PixelNavigation';
+import PixelCharacter from '@/components/pixel/PixelCharacter';
 import XPBar from '@/components/pixel/XPBar';
 import { CheckCircle, Circle, Flame, Star, Trophy, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
+import pixelSunsetTown from '@/assets/pixel-sunset-town.png';
 
 interface Quest {
   id: string;
@@ -75,14 +77,31 @@ const Dashboard = () => {
   };
 
   return (
-    <main className="min-h-screen bg-background p-4 pb-24">
-      <div className="max-w-md mx-auto space-y-6">
-        {/* Header */}
+    <main 
+      className="min-h-screen bg-background p-4 pb-24 relative"
+      style={{
+        backgroundImage: `url(${pixelSunsetTown})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        imageRendering: 'pixelated'
+      }}
+    >
+      {/* Background overlay */}
+      <div className="absolute inset-0 bg-background/85"></div>
+      
+      <div className="max-w-md mx-auto space-y-6 relative z-10">
+        {/* Header with Character */}
         <div className="text-center space-y-2">
-          <h1 className="text-pixel-lg font-pixel text-primary">QUEST DASHBOARD</h1>
-          <p className="text-pixel-sm text-muted-foreground font-pixel">
-            TODAY'S MISSIONS
-          </p>
+          <div className="flex items-center justify-center gap-3">
+            <PixelCharacter state="walking" size="md" />
+            <div>
+              <h1 className="text-pixel-lg font-pixel text-primary">QUEST DASHBOARD</h1>
+              <p className="text-pixel-sm text-muted-foreground font-pixel">
+                TODAY'S MISSIONS
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Player Stats */}

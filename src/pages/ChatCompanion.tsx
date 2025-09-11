@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { PixelButton } from '@/components/ui/pixel-button';
 import { PixelCard } from '@/components/ui/pixel-card';
 import PixelNavigation from '@/components/pixel/PixelNavigation';
+import PixelCharacter from '@/components/pixel/PixelCharacter';
 import PixelAvatar from '@/components/pixel/PixelAvatar';
 import { Input } from '@/components/ui/input';
-import { Send, AlertTriangle } from 'lucide-react';
+import { Send, AlertTriangle, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
+import pixelStudyRoom from '@/assets/pixel-study-room.png';
 
 interface Message {
   id: string;
@@ -110,21 +112,30 @@ const ChatCompanion = () => {
   };
 
   return (
-    <main className="min-h-screen bg-background pb-24">
-      <div className="max-w-md mx-auto h-screen flex flex-col">
+    <main 
+      className="min-h-screen bg-background pb-24 relative"
+      style={{
+        backgroundImage: `url(${pixelStudyRoom})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        imageRendering: 'pixelated'
+      }}
+    >
+      <div className="absolute inset-0 bg-background/85"></div>
+      
+      <div className="max-w-md mx-auto h-screen flex flex-col relative z-10">
         {/* Header */}
-        <div className="p-4 bg-surface border-b-2 border-primary">
+        <div className="p-4 hud-element border-b-2 border-primary">
           <div className="flex items-center gap-3">
-            <PixelAvatar 
-              size="md" 
-              mood={messages[messages.length - 1]?.mood || 'happy'} 
-            />
-            <div>
+            <PixelCharacter state="thinking" size="md" />
+            <div className="flex-1">
               <h1 className="text-pixel font-pixel text-primary">PIXELPAL</h1>
               <p className="text-pixel-sm text-muted-foreground font-pixel">
                 Your Wellness Companion
               </p>
             </div>
+            <Sparkles className="w-4 h-4 text-pixel-accent animate-pulse" />
           </div>
         </div>
 
@@ -183,7 +194,7 @@ const ChatCompanion = () => {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-surface border-t-2 border-primary">
+        <div className="p-4 hud-element border-t-2 border-primary">
           <div className="flex gap-3 items-end">
             <Input
               value={currentMessage}

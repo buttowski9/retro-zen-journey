@@ -1,9 +1,9 @@
 import { Link } from 'react-router-dom';
 import { PixelButton } from '@/components/ui/pixel-button';
 import { PixelCard } from '@/components/ui/pixel-card';
+import PixelCharacter from '@/components/pixel/PixelCharacter';
 import { Sparkles, Gamepad2 } from 'lucide-react';
 import pixelForestBg from '@/assets/pixel-forest-bg.png';
-import pixelCompanion from '@/assets/pixel-companion.png';
 
 const Home = () => {
   return (
@@ -40,13 +40,8 @@ const Home = () => {
           {/* Pixel Art Hero Character */}
           <PixelCard className="p-8 relative overflow-hidden bg-surface/90 backdrop-blur-sm">
             <div className="relative z-10">
-              <div className="w-32 h-32 mx-auto mb-4 relative">
-                <img 
-                  src={pixelCompanion} 
-                  alt="Pixel Companion" 
-                  className="w-full h-full object-contain"
-                  style={{ imageRendering: 'pixelated' }}
-                />
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <PixelCharacter state="happy" size="lg" />
               </div>
               
               <div className="space-y-4">
@@ -77,7 +72,7 @@ const Home = () => {
         
         {/* Action Buttons */}
         <div className="space-y-4">
-          <Link to="/dashboard" className="block">
+          <Link to="/get-started" className="block">
             <PixelButton variant="hero" size="lg" className="w-full">
               <Gamepad2 className="w-4 h-4" />
               START JOURNEY

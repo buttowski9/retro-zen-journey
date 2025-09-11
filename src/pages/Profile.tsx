@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { PixelCard, PixelCardContent, PixelCardHeader, PixelCardTitle } from '@/components/ui/pixel-card';
 import PixelNavigation from '@/components/pixel/PixelNavigation';
+import PixelCharacter from '@/components/pixel/PixelCharacter';
 import XPBar from '@/components/pixel/XPBar';
 import PixelAvatar from '@/components/pixel/PixelAvatar';
 import { Trophy, Medal, Star, Calendar, Zap, Heart, Target } from 'lucide-react';
+import pixelStarryNight from '@/assets/pixel-starry-night.png';
 
 const Profile = () => {
   const [playerData] = useState({
@@ -35,15 +37,32 @@ const Profile = () => {
   const progressPercentage = (playerData.currentXP / playerData.maxXP) * 100;
 
   return (
-    <main className="min-h-screen bg-background p-4 pb-24">
-      <div className="max-w-md mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <h1 className="text-pixel-lg font-pixel text-primary">PLAYER PROFILE</h1>
-          <p className="text-pixel-sm text-muted-foreground font-pixel">
-            YOUR WELLNESS JOURNEY
-          </p>
-        </div>
+    <main 
+      className="min-h-screen bg-background p-4 pb-24 relative"
+      style={{
+        backgroundImage: `url(${pixelStarryNight})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        imageRendering: 'pixelated'
+      }}
+    >
+      <div className="absolute inset-0 bg-background/85"></div>
+      
+      <div className="max-w-md mx-auto space-y-6 relative z-10">
+        {/* Header with Character */}
+        <PixelCard className="p-4 hud-element">
+          <div className="flex items-center gap-3">
+            <PixelCharacter state="happy" size="md" />
+            <div className="flex-1">
+              <h1 className="text-pixel-lg font-pixel text-primary">PLAYER PROFILE</h1>
+              <p className="text-pixel-sm text-muted-foreground font-pixel">
+                YOUR WELLNESS JOURNEY
+              </p>
+            </div>
+            <Trophy className="w-5 h-5 text-pixel-accent" />
+          </div>
+        </PixelCard>
 
         {/* Player Info */}
         <PixelCard>
