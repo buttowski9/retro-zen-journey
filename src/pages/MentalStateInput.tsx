@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserInputs } from '@/hooks/useSupabaseData';
 import { PixelButton } from '@/components/ui/pixel-button';
 import { PixelCard, PixelCardContent, PixelCardHeader, PixelCardTitle } from '@/components/ui/pixel-card';
 import PixelCharacter from '@/components/pixel/PixelCharacter';
@@ -22,10 +24,18 @@ interface GoalOption {
 }
 
 const MentalStateInput = () => {
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const { saveUserInput } = useUserInputs();
   const [selectedMoods, setSelectedMoods] = useState<string[]>([]);
   const [selectedGoals, setSelectedGoals] = useState<string[]>([]);
   const [currentStep, setCurrentStep] = useState<'mood' | 'goals' | 'complete'>('mood');
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
 
   const moodOptions: MoodOption[] = [
     { id: 'stress', label: 'STRESSED', description: 'Feeling overwhelmed or pressured', icon: Brain },
@@ -61,13 +71,16 @@ const MentalStateInput = () => {
     );
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === 'mood' && selectedMoods.length > 0) {
+      // Save mood selections
+      await saveUserInput('current_mood', selectedMoods.join(', '));
       setCurrentStep('goals');
     } else if (currentStep === 'goals' && selectedGoals.length > 0) {
+      // Save goal selections
+      await saveUserInput('wellness_goals', selectedGoals.join(', '));
       setCurrentStep('complete');
-      // Here you would normally save to database
-      toast.success('Profile saved! Welcome to PixelWell!', { duration: 3000 });
+      toast.success('Profile saved! Welcome to MindQuest!', { duration: 3000 });
       setTimeout(() => {
         navigate('/dashboard');
       }, 2000);

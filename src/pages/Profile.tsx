@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 import { PixelCard, PixelCardContent, PixelCardHeader, PixelCardTitle } from '@/components/ui/pixel-card';
 import PixelNavigation from '@/components/pixel/PixelNavigation';
 import PixelCharacter from '@/components/pixel/PixelCharacter';
@@ -8,33 +10,39 @@ import { Trophy, Medal, Star, Calendar, Zap, Heart, Target } from 'lucide-react'
 import pixelStarryNight from '@/assets/pixel-starry-night.png';
 
 const Profile = () => {
-  const [playerData] = useState({
-    username: "PIXEL_WARRIOR",
-    level: 3,
-    currentXP: 125,
-    maxXP: 200,
-    totalXP: 525,
-    streak: 7,
-    joinDate: "2024-01-15",
-    achievements: [
-      { id: 1, name: "FIRST STEPS", description: "Complete your first quest", icon: "🚶", unlocked: true },
-      { id: 2, name: "STREAK MASTER", description: "Maintain a 7-day streak", icon: "🔥", unlocked: true },
-      { id: 3, name: "HYDRATION HERO", description: "Drink water 10 days in a row", icon: "💧", unlocked: true },
-      { id: 4, name: "MEDITATION MASTER", description: "Meditate for 30 days", icon: "🧘", unlocked: false },
-      { id: 5, name: "STEP CHAMPION", description: "Walk 10,000 steps in one day", icon: "👟", unlocked: false },
-      { id: 6, name: "WELLNESS WARRIOR", description: "Reach level 5", icon: "⚔️", unlocked: false },
-    ],
-    stats: {
-      questsCompleted: 23,
-      streakRecord: 12,
-      totalDays: 15,
-      averageXPPerDay: 35
-    }
-  });
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const unlockedAchievements = playerData.achievements.filter(a => a.unlocked);
-  const nextLevelXP = playerData.maxXP - playerData.currentXP;
-  const progressPercentage = (playerData.currentXP / playerData.maxXP) * 100;
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
+
+  if (!user) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <PixelCharacter size="lg" />
+          <p className="text-pixel font-pixel text-primary">LOADING PROFILE...</p>
+        </div>
+      </main>
+    );
+  }
+
+  // Mock data for now - will connect to Supabase once types are fixed
+  const level = 3;
+  const currentXP = 125;
+  const maxXP = 200;
+  const achievements = [
+    { id: 1, name: "FIRST STEPS", description: "Complete your first quest", icon: "🚶", unlocked: true },
+    { id: 2, name: "STREAK MASTER", description: "Maintain a 7-day streak", icon: "🔥", unlocked: true },
+    { id: 3, name: "HYDRATION HERO", description: "Drink water 10 days in a row", icon: "💧", unlocked: true },
+  ];
+
+  const unlockedAchievements = achievements.filter(a => a.unlocked);
+  const nextLevelXP = maxXP - currentXP;
+  const progressPercentage = (currentXP / maxXP) * 100;
 
   return (
     <main 

@@ -1,80 +1,45 @@
-import { useState } from 'react';
-import { PixelButton } from '@/components/ui/pixel-button';
+import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile, useQuests } from '@/hooks/useSupabaseData';
 import { PixelCard, PixelCardContent, PixelCardHeader, PixelCardTitle } from '@/components/ui/pixel-card';
 import PixelNavigation from '@/components/pixel/PixelNavigation';
 import PixelCharacter from '@/components/pixel/PixelCharacter';
 import XPBar from '@/components/pixel/XPBar';
 import { CheckCircle, Circle, Flame, Star, Trophy, Calendar } from 'lucide-react';
-import { toast } from 'sonner';
 import pixelSunsetTown from '@/assets/pixel-sunset-town.png';
 
-interface Quest {
-  id: string;
-  title: string;
-  description: string;
-  xp: number;
-  completed: boolean;
-  type: 'daily' | 'weekly';
-}
-
 const Dashboard = () => {
-  const [quests, setQuests] = useState<Quest[]>([
-    {
-      id: '1',
-      title: 'MORNING WALK',
-      description: 'Take a 15-minute walk outside',
-      xp: 10,
-      completed: false,
-      type: 'daily'
-    },
-    {
-      id: '2', 
-      title: 'HYDRATE HERO',
-      description: 'Drink 8 glasses of water',
-      xp: 10,
-      completed: true,
-      type: 'daily'
-    },
-    {
-      id: '3',
-      title: 'MINDFUL MOMENT',
-      description: 'Meditate for 5 minutes',
-      xp: 15,
-      completed: false,
-      type: 'daily'
-    },
-    {
-      id: '4',
-      title: 'WEEKLY WARRIOR',
-      description: 'Complete 5 daily quests',
-      xp: 50,
-      completed: false,
-      type: 'weekly'
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { profile, loading: profileLoading } = useUserProfile();
+  const { userQuests, loading: questsLoading, completeQuest } = useQuests();
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
     }
-  ]);
+  }, [user, navigate]);
 
-  const [playerStats] = useState({
-    level: 3,
-    currentXP: 125,
-    maxXP: 200,
-    streak: 7,
-    totalXP: 525
-  });
+  if (!user || profileLoading || questsLoading) {
+    return (
+      <main className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <PixelCharacter size="lg" />
+          <p className="text-pixel font-pixel text-primary">LOADING QUESTS...</p>
+        </div>
+      </main>
+    );
+  }
 
-  const completedQuests = quests.filter(q => q.completed).length;
-  const totalXPToday = quests.filter(q => q.completed && q.type === 'daily').reduce((sum, q) => sum + q.xp, 0);
-
-  const completeQuest = (questId: string) => {
-    setQuests(prev => prev.map(quest => {
-      if (quest.id === questId && !quest.completed) {
-        toast.success(`Quest Complete! +${quest.xp} XP`, {
-          duration: 3000,
-        });
-        return { ...quest, completed: true };
-      }
-      return quest;
-    }));
-  };
+  const completedQuests = userQuests.filter(q => q.status === 'completed').length;
+  const pendingQuests = userQuests.filter(q => q.status === 'pending');
+  const dailyQuests = pendingQuests.filter(q => q.quests?.type === 'daily' || q.quests?.title?.includes('DAILY'));
+  const weeklyQuests = pendingQuests.filter(q => q.quests?.type === 'weekly' || q.quests?.title?.includes('WEEKLY'));
+  
+  const currentXP = profile?.xp_points || 0;
+  const level = profile?.level || 1;
+  const maxXP = level * 100; // 100 XP per level
 
   return (
     <main 
@@ -111,25 +76,25 @@ const Dashboard = () => {
           </PixelCardHeader>
           <PixelCardContent className="space-y-4">
             <XPBar 
-              currentXP={playerStats.currentXP} 
-              maxXP={playerStats.maxXP}
-              level={playerStats.level}
+              currentXP={currentXP} 
+              maxXP={maxXP}
+              level={level}
             />
             
             <div className="grid grid-cols-3 gap-4">
               <div className="text-center space-y-1">
                 <Flame className="w-5 h-5 text-pixel-accent mx-auto" />
-                <div className="text-pixel-sm font-pixel text-pixel-accent">{playerStats.streak}</div>
+                <div className="text-pixel-sm font-pixel text-pixel-accent">0</div>
                 <div className="text-pixel-sm text-muted-foreground">STREAK</div>
               </div>
               <div className="text-center space-y-1">
                 <Star className="w-5 h-5 text-pixel-warning mx-auto" />
-                <div className="text-pixel-sm font-pixel text-pixel-warning">{totalXPToday}</div>
-                <div className="text-pixel-sm text-muted-foreground">XP TODAY</div>
+                <div className="text-pixel-sm font-pixel text-pixel-warning">{completedQuests}</div>
+                <div className="text-pixel-sm text-muted-foreground">COMPLETED</div>
               </div>
               <div className="text-center space-y-1">
                 <Trophy className="w-5 h-5 text-primary mx-auto" />
-                <div className="text-pixel-sm font-pixel text-primary">{playerStats.totalXP}</div>
+                <div className="text-pixel-sm font-pixel text-primary">{currentXP}</div>
                 <div className="text-pixel-sm text-muted-foreground">TOTAL XP</div>
               </div>
             </div>
@@ -145,47 +110,55 @@ const Dashboard = () => {
             </PixelCardTitle>
           </PixelCardHeader>
           <PixelCardContent className="space-y-3">
-            {quests.filter(q => q.type === 'daily').map((quest) => (
-              <div
-                key={quest.id}
-                className={`p-3 border-2 transition-all duration-200 ${
-                  quest.completed
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border bg-surface hover:border-primary/50'
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <button
-                      onClick={() => completeQuest(quest.id)}
-                      disabled={quest.completed}
-                      className="text-primary hover:text-primary-glow transition-colors"
-                    >
-                      {quest.completed ? (
-                        <CheckCircle className="w-5 h-5" />
-                      ) : (
-                        <Circle className="w-5 h-5" />
-                      )}
-                    </button>
+            {dailyQuests.length === 0 ? (
+              <div className="text-center p-6">
+                <p className="text-pixel-sm text-muted-foreground">
+                  No daily quests assigned yet. Visit the onboarding to get started!
+                </p>
+              </div>
+            ) : (
+              dailyQuests.map((userQuest) => (
+                <div
+                  key={userQuest.id}
+                  className={`p-3 border-2 transition-all duration-200 ${
+                    userQuest.status === 'completed'
+                      ? 'border-primary bg-primary/10'
+                      : 'border-border bg-surface hover:border-primary/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <button
+                        onClick={() => completeQuest(userQuest.quest_id)}
+                        disabled={userQuest.status === 'completed'}
+                        className="text-primary hover:text-primary-glow transition-colors"
+                      >
+                        {userQuest.status === 'completed' ? (
+                          <CheckCircle className="w-5 h-5" />
+                        ) : (
+                          <Circle className="w-5 h-5" />
+                        )}
+                      </button>
+                      
+                      <div className="flex-1">
+                        <h3 className={`text-pixel-sm font-pixel ${
+                          userQuest.status === 'completed' ? 'text-primary' : 'text-foreground'
+                        }`}>
+                          {userQuest.quests?.title || 'Quest'}
+                        </h3>
+                        <p className="text-pixel-sm text-muted-foreground">
+                          {userQuest.quests?.description || 'Complete this quest'}
+                        </p>
+                      </div>
+                    </div>
                     
-                    <div className="flex-1">
-                      <h3 className={`text-pixel-sm font-pixel ${
-                        quest.completed ? 'text-primary' : 'text-foreground'
-                      }`}>
-                        {quest.title}
-                      </h3>
-                      <p className="text-pixel-sm text-muted-foreground">
-                        {quest.description}
-                      </p>
+                    <div className="text-pixel-sm font-pixel text-pixel-accent">
+                      +{userQuest.quests?.xp_reward || 10} XP
                     </div>
                   </div>
-                  
-                  <div className="text-pixel-sm font-pixel text-pixel-accent">
-                    +{quest.xp} XP
-                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </PixelCardContent>
         </PixelCard>
 
@@ -198,37 +171,45 @@ const Dashboard = () => {
             </PixelCardTitle>
           </PixelCardHeader>
           <PixelCardContent className="space-y-3">
-            {quests.filter(q => q.type === 'weekly').map((quest) => (
-              <div
-                key={quest.id}
-                className="p-3 border-2 border-pixel-accent bg-pixel-accent/5"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="text-pixel-accent">
-                      {quest.completed ? (
-                        <CheckCircle className="w-5 h-5" />
-                      ) : (
-                        <Circle className="w-5 h-5" />
-                      )}
+            {weeklyQuests.length === 0 ? (
+              <div className="text-center p-6">
+                <p className="text-pixel-sm text-muted-foreground">
+                  No weekly challenges available yet.
+                </p>
+              </div>
+            ) : (
+              weeklyQuests.map((userQuest) => (
+                <div
+                  key={userQuest.id}
+                  className="p-3 border-2 border-pixel-accent bg-pixel-accent/5"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3 flex-1">
+                      <div className="text-pixel-accent">
+                        {userQuest.status === 'completed' ? (
+                          <CheckCircle className="w-5 h-5" />
+                        ) : (
+                          <Circle className="w-5 h-5" />
+                        )}
+                      </div>
+                      
+                      <div className="flex-1">
+                        <h3 className="text-pixel-sm font-pixel text-foreground">
+                          {userQuest.quests?.title || 'Weekly Quest'}
+                        </h3>
+                        <p className="text-pixel-sm text-muted-foreground">
+                          {userQuest.quests?.description || 'Complete this weekly challenge'}
+                        </p>
+                      </div>
                     </div>
                     
-                    <div className="flex-1">
-                      <h3 className="text-pixel-sm font-pixel text-foreground">
-                        {quest.title}
-                      </h3>
-                      <p className="text-pixel-sm text-muted-foreground">
-                        {quest.description}
-                      </p>
+                    <div className="text-pixel-sm font-pixel text-pixel-accent">
+                      +{userQuest.quests?.xp_reward || 50} XP
                     </div>
                   </div>
-                  
-                  <div className="text-pixel-sm font-pixel text-pixel-accent">
-                    +{quest.xp} XP
-                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            )}
           </PixelCardContent>
         </PixelCard>
 
@@ -240,13 +221,13 @@ const Dashboard = () => {
                 TODAY'S PROGRESS
               </p>
               <p className="text-pixel font-pixel text-primary">
-                {completedQuests} / {quests.filter(q => q.type === 'daily').length} QUESTS COMPLETE
+                {completedQuests} / {userQuests.length} QUESTS COMPLETE
               </p>
               <div className="w-full h-2 bg-surface border border-primary overflow-hidden">
                 <div 
                   className="h-full bg-gradient-to-r from-pixel-primary to-pixel-accent transition-all duration-500"
                   style={{ 
-                    width: `${(completedQuests / quests.filter(q => q.type === 'daily').length) * 100}%` 
+                    width: `${userQuests.length > 0 ? (completedQuests / userQuests.length) * 100 : 0}%` 
                   }}
                 />
               </div>

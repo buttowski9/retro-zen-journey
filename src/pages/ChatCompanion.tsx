@@ -1,4 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { useChatHistory } from '@/hooks/useSupabaseData';
 import { PixelButton } from '@/components/ui/pixel-button';
 import { PixelCard } from '@/components/ui/pixel-card';
 import PixelNavigation from '@/components/pixel/PixelNavigation';
@@ -18,17 +21,49 @@ interface Message {
 }
 
 const ChatCompanion = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { messages: chatHistory, saveMessage } = useChatHistory();
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       type: 'companion',
-      content: "Hello, adventurer! I'm PixelPal, your wellness companion! How are you feeling today?",
+      content: "Hello, adventurer! I'm MindBot, your wellness companion! How are you feeling today?",
       timestamp: new Date(),
       mood: 'happy'
     }
   ]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/auth');
+    }
+  }, [user, navigate]);
+
+  // Load chat history from database
+  useEffect(() => {
+    if (chatHistory.length > 0) {
+      const historyMessages: Message[] = [];
+      chatHistory.forEach((chat, index) => {
+        historyMessages.push({
+          id: `history-user-${index}`,
+          type: 'user',
+          content: chat.message,
+          timestamp: new Date(chat.created_at)
+        });
+        historyMessages.push({
+          id: `history-companion-${index}`,
+          type: 'companion',
+          content: chat.response,
+          timestamp: new Date(chat.created_at),
+          mood: 'neutral'
+        });
+      });
+      setMessages(prev => [...prev, ...historyMessages]);
+    }
+  }, [chatHistory]);
 
   // Simulated AI responses (in real app, this would connect to Supabase + AI)
   const companionResponses = [
@@ -39,13 +74,14 @@ const ChatCompanion = () => {
     { trigger: ['help', 'crisis', 'hurt'], response: "I'm concerned about you. If you're in crisis, please reach out to a mental health professional or crisis helpline immediately. You're not alone! 🆘", mood: 'sad' }
   ];
 
-  const sendMessage = () => {
+  const sendMessage = async () => {
     if (!currentMessage.trim()) return;
 
+    const messageContent = currentMessage;
     const userMessage: Message = {
       id: Date.now().toString(),
       type: 'user',
-      content: currentMessage,
+      content: messageContent,
       timestamp: new Date()
     };
 
@@ -56,7 +92,7 @@ const ChatCompanion = () => {
     // Check for crisis keywords
     const crisisKeywords = ['crisis', 'hurt', 'suicide', 'die', 'kill'];
     const hasCrisisContent = crisisKeywords.some(keyword => 
-      currentMessage.toLowerCase().includes(keyword)
+      messageContent.toLowerCase().includes(keyword)
     );
 
     if (hasCrisisContent) {
@@ -67,8 +103,8 @@ const ChatCompanion = () => {
     }
 
     // Simulate AI response delay
-    setTimeout(() => {
-      const messageText = currentMessage.toLowerCase();
+    setTimeout(async () => {
+      const messageText = messageContent.toLowerCase();
       let response = "That's interesting! Tell me more about how you're feeling. I'm here to support your wellness journey! ✨";
       let mood: any = 'neutral';
 
@@ -91,6 +127,9 @@ const ChatCompanion = () => {
 
       setMessages(prev => [...prev, companionMessage]);
       setIsTyping(false);
+
+      // Save to database
+      await saveMessage(messageContent, response);
 
       // Suggest a quest based on the conversation
       if (messageText.includes('walk') || messageText.includes('exercise')) {
