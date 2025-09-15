@@ -89,13 +89,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const signUp = async (email: string, password: string, name: string) => {
-    const redirectUrl = `${window.location.origin}/`;
-    
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
         data: {
           name: name
         }
@@ -105,7 +102,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (error) {
       toast.error(error.message);
     } else {
-      toast.success('Check your email to confirm your account!');
+      toast.success('Account created successfully!');
     }
     
     return { error };

@@ -80,17 +80,17 @@ const Profile = () => {
               
               <div>
                 <h2 className="text-pixel font-pixel text-primary mb-2">
-                  {playerData.username}
+                  {user.user_metadata?.name || 'ADVENTURER'}
                 </h2>
                 <p className="text-pixel-sm text-muted-foreground font-pixel">
-                  JOINED {new Date(playerData.joinDate).toLocaleDateString()}
+                  JOINED {new Date(user.created_at).toLocaleDateString()}
                 </p>
               </div>
 
               <XPBar 
-                currentXP={playerData.currentXP}
-                maxXP={playerData.maxXP}
-                level={playerData.level}
+                currentXP={currentXP}
+                maxXP={maxXP}
+                level={level}
               />
 
               <p className="text-pixel-sm text-muted-foreground font-pixel">
@@ -106,7 +106,7 @@ const Profile = () => {
             <PixelCardContent className="p-4 text-center">
               <Target className="w-6 h-6 text-pixel-accent mx-auto mb-2" />
               <div className="text-pixel font-pixel text-pixel-accent">
-                {playerData.stats.questsCompleted}
+                {12}
               </div>
               <div className="text-pixel-sm text-muted-foreground">
                 QUESTS DONE
@@ -118,7 +118,7 @@ const Profile = () => {
             <PixelCardContent className="p-4 text-center">
               <Zap className="w-6 h-6 text-pixel-warning mx-auto mb-2" />
               <div className="text-pixel font-pixel text-pixel-warning">
-                {playerData.streak}
+                {7}
               </div>
               <div className="text-pixel-sm text-muted-foreground">
                 DAY STREAK
@@ -143,7 +143,7 @@ const Profile = () => {
                   <span className="text-pixel-sm font-pixel">TOTAL XP</span>
                 </div>
                 <div className="text-pixel text-primary font-pixel">
-                  {playerData.totalXP.toLocaleString()}
+                  {350}
                 </div>
               </div>
 
@@ -153,7 +153,7 @@ const Profile = () => {
                   <span className="text-pixel-sm font-pixel">ACTIVE DAYS</span>
                 </div>
                 <div className="text-pixel text-pixel-secondary font-pixel">
-                  {playerData.stats.totalDays}
+                  {15}
                 </div>
               </div>
 
@@ -163,7 +163,7 @@ const Profile = () => {
                   <span className="text-pixel-sm font-pixel">BEST STREAK</span>
                 </div>
                 <div className="text-pixel text-pixel-error font-pixel">
-                  {playerData.stats.streakRecord}
+                  {12}
                 </div>
               </div>
 
@@ -173,7 +173,7 @@ const Profile = () => {
                   <span className="text-pixel-sm font-pixel">AVG XP/DAY</span>
                 </div>
                 <div className="text-pixel text-pixel-accent font-pixel">
-                  {playerData.stats.averageXPPerDay}
+                  {23}
                 </div>
               </div>
             </div>
@@ -185,12 +185,12 @@ const Profile = () => {
           <PixelCardHeader>
             <PixelCardTitle className="flex items-center gap-2">
               <Medal className="w-4 h-4" />
-              ACHIEVEMENTS ({unlockedAchievements.length}/{playerData.achievements.length})
+              ACHIEVEMENTS ({unlockedAchievements.length}/{achievements.length})
             </PixelCardTitle>
           </PixelCardHeader>
           <PixelCardContent className="space-y-3">
             <div className="grid grid-cols-3 gap-3">
-              {playerData.achievements.map((achievement) => (
+              {achievements.map((achievement) => (
                 <div
                   key={achievement.id}
                   className={`p-3 border-2 text-center transition-all ${
@@ -226,7 +226,7 @@ const Profile = () => {
               
               <div className="space-y-2">
                 <div className="flex justify-between text-pixel-sm font-pixel">
-                  <span>LEVEL {playerData.level}</span>
+                  <span>LEVEL {level}</span>
                   <span>{progressPercentage.toFixed(0)}%</span>
                 </div>
                 
