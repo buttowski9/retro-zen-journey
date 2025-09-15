@@ -14,7 +14,163 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_history: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          response: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          response?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          response?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quests: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          title: string
+          type: string | null
+          xp_reward: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          title: string
+          type?: string | null
+          xp_reward?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          title?: string
+          type?: string | null
+          xp_reward?: number | null
+        }
+        Relationships: []
+      }
+      user_inputs: {
+        Row: {
+          answer: string | null
+          created_at: string | null
+          id: string
+          question: string | null
+          user_id: string | null
+        }
+        Insert: {
+          answer?: string | null
+          created_at?: string | null
+          id?: string
+          question?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          answer?: string | null
+          created_at?: string | null
+          id?: string
+          question?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_inputs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_quests: {
+        Row: {
+          completed_at: string | null
+          id: string
+          quest_id: string | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          quest_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          quest_id?: string | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_quests_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "quests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_quests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          id: string
+          level: number | null
+          name: string | null
+          xp_points: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          level?: number | null
+          name?: string | null
+          xp_points?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          id?: string
+          level?: number | null
+          name?: string | null
+          xp_points?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
