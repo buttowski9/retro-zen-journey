@@ -1,4 +1,6 @@
 import { cn } from '@/lib/utils';
+import { useState, useEffect } from 'react';
+import { removeBackground, loadImageFromSrc } from '@/utils/backgroundRemoval';
 import pixelCharacterStatic from '@/assets/pixel-character-static.png';
 
 interface PixelCharacterProps {
@@ -12,11 +14,51 @@ const PixelCharacter = ({
   className,
   environment = 'default'
 }: PixelCharacterProps) => {
+  const [processedImageSrc, setProcessedImageSrc] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const sizeClasses = {
     sm: 'w-12 h-12',
     md: 'w-16 h-16', 
     lg: 'w-24 h-24'
   };
+
+  // Process image to remove background on component mount
+  useEffect(() => {
+    const processImage = async () => {
+      try {
+        setIsProcessing(true);
+        setError(null);
+        
+        // Load the original image
+        const img = await loadImageFromSrc(pixelCharacterStatic);
+        
+        // Remove background
+        const processedBlob = await removeBackground(img);
+        
+        // Create object URL for the processed image
+        const processedUrl = URL.createObjectURL(processedBlob);
+        setProcessedImageSrc(processedUrl);
+      } catch (err) {
+        console.error('Failed to process character image:', err);
+        setError('Failed to process image');
+        // Fallback to original image
+        setProcessedImageSrc(pixelCharacterStatic);
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    processImage();
+
+    // Cleanup function to revoke object URL
+    return () => {
+      if (processedImageSrc && processedImageSrc !== pixelCharacterStatic) {
+        URL.revokeObjectURL(processedImageSrc);
+      }
+    };
+  }, []);
 
   // Environment-specific background and effects
   const environmentStyles = {
@@ -63,20 +105,32 @@ const PixelCharacter = ({
           background: environment !== 'default' ? 'rgba(255, 255, 255, 0.05)' : 'transparent'
         }}
       >
-        <img 
-          src={pixelCharacterStatic}
-          alt="Pixel Character"
-          className={cn(
-            sizeClasses[size],
-            "object-contain relative z-10",
-            environment === 'sunset' && "brightness-110 contrast-105",
-            environment === 'forest' && "hue-rotate-15 brightness-95",
-            environment === 'indoor' && "brightness-90 contrast-110"
-          )}
-          style={{
-            imageRendering: 'pixelated'
-          }}
-        />
+        {isProcessing ? (
+          // Loading placeholder
+          <div 
+            className={cn(
+              sizeClasses[size],
+              "bg-surface animate-pulse rounded-lg flex items-center justify-center"
+            )}
+          >
+            <div className="w-3 h-3 bg-primary animate-bounce"></div>
+          </div>
+        ) : (
+          <img 
+            src={processedImageSrc || pixelCharacterStatic}
+            alt="Pixel Character"
+            className={cn(
+              sizeClasses[size],
+              "object-contain relative z-10",
+              environment === 'sunset' && "brightness-110 contrast-105",
+              environment === 'forest' && "hue-rotate-15 brightness-95",
+              environment === 'indoor' && "brightness-90 contrast-110"
+            )}
+            style={{
+              imageRendering: 'pixelated'
+            }}
+          />
+        )}
       </div>
     </div>
   );
