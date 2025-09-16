@@ -40,9 +40,9 @@ const Home = () => {
             
             <PixelCard className="p-8 relative overflow-hidden bg-surface/90 backdrop-blur-sm">
               <div className="relative z-10">
-              <div className="flex items-center justify-center gap-4 mb-4">
-                <PixelCharacter size="lg" environment="forest" />
-              </div>
+                <div className="flex items-center justify-center gap-4 mb-4">
+                  <PixelCharacter size="lg" />
+                </div>
                 
                 <div className="space-y-4">
                   <h2 className="text-pixel font-pixel text-foreground">
@@ -138,7 +138,7 @@ const Home = () => {
           <PixelCard className="p-8 relative overflow-hidden bg-surface/90 backdrop-blur-sm">
             <div className="relative z-10">
               <div className="flex items-center justify-center gap-4 mb-4">
-                <PixelCharacter size="lg" environment="forest" />
+                <PixelCharacter size="lg" />
               </div>
               
               <div className="space-y-4">
