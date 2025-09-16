@@ -1,78 +1,51 @@
 import { cn } from '@/lib/utils';
-import pixelCharacterStatic from '@/assets/pixel-character-static.png';
+import pixelCharacterSprites from '@/assets/pixel-character-sprites.png';
 import { useState, useEffect } from 'react';
-import { removeBackground, loadImage } from '@/utils/backgroundRemoval';
 
 interface PixelCharacterProps {
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  frame?: number; // Which sprite frame to show (0-7)
 }
 
 const PixelCharacter = ({ 
   size = 'md', 
-  className
+  className,
+  frame = 0
 }: PixelCharacterProps) => {
-  const [processedImageUrl, setProcessedImageUrl] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [currentFrame, setCurrentFrame] = useState(frame);
   
+  // Bigger sizes as requested
   const sizeClasses = {
-    sm: 'w-12 h-12',
-    md: 'w-16 h-16', 
-    lg: 'w-24 h-24'
+    sm: 'w-16 h-16',
+    md: 'w-24 h-24', 
+    lg: 'w-32 h-32'
   };
 
+  // Auto-animate through frames if no specific frame is set
   useEffect(() => {
-    const processImage = async () => {
-      try {
-        setIsProcessing(true);
-        
-        // Load the original image
-        const response = await fetch(pixelCharacterStatic);
-        const blob = await response.blob();
-        const imageElement = await loadImage(blob);
-        
-        // Remove background
-        const processedBlob = await removeBackground(imageElement);
-        const processedUrl = URL.createObjectURL(processedBlob);
-        
-        setProcessedImageUrl(processedUrl);
-      } catch (error) {
-        console.error('Failed to process image:', error);
-        // Fallback to original image
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-
-    processImage();
-
-    // Cleanup
-    return () => {
-      if (processedImageUrl) {
-        URL.revokeObjectURL(processedImageUrl);
-      }
-    };
-  }, []);
+    if (frame === 0) {
+      const interval = setInterval(() => {
+        setCurrentFrame(prev => (prev + 1) % 8);
+      }, 200);
+      return () => clearInterval(interval);
+    } else {
+      setCurrentFrame(frame);
+    }
+  }, [frame]);
 
   return (
-    <div className={cn("relative", className)}>
-      {isProcessing && (
-        <div className={cn(
-          sizeClasses[size],
-          "flex items-center justify-center bg-muted rounded animate-pulse"
-        )}>
-          <div className="text-xs text-muted-foreground">⚡</div>
-        </div>
-      )}
-      <img 
-        src={processedImageUrl || pixelCharacterStatic}
-        alt="Pixel Character"
+    <div className={cn("relative overflow-hidden", className)}>
+      <div 
         className={cn(
           sizeClasses[size],
-          "object-contain transition-opacity duration-300",
-          isProcessing && "opacity-0"
+          "relative"
         )}
         style={{
+          backgroundImage: `url(${pixelCharacterSprites})`,
+          backgroundSize: '800% 200%', // 8 columns, 2 rows
+          backgroundPosition: `${(currentFrame % 4) * (100/3)}% ${Math.floor(currentFrame / 4) * 100}%`,
+          backgroundRepeat: 'no-repeat',
           imageRendering: 'pixelated'
         }}
       />
