@@ -85,21 +85,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           return;
         }
 
-        // Auto-assign daily quests to new user
-        try {
-          const { error: assignError } = await supabase
-            .rpc('assign_daily_quests_to_user', { 
-              user_uuid: user.id 
-            });
-
-          if (assignError) {
-            console.error('Error assigning quests:', assignError);
-          } else {
-            toast.success('Welcome! Daily quests assigned to your adventure!');
-          }
-        } catch (questError) {
-          console.error('Error in quest assignment:', questError);
-        }
+        // Note: Daily quests will be assigned after onboarding completion
       }
     } catch (error) {
       console.error('Error checking user profile:', error);

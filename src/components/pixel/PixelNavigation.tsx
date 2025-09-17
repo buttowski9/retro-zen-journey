@@ -6,9 +6,9 @@ const PixelNavigation = () => {
   const location = useLocation();
   
   const navItems = [
-    { path: '/', icon: Home, label: 'HOME' },
-    { path: '/dashboard', icon: Trophy, label: 'QUESTS' },
-    { path: '/chat', icon: MessageSquare, label: 'COMPANION' },
+    { path: '/dashboard', icon: Home, label: 'HOME' },
+    { path: '/progress', icon: Trophy, label: 'PROGRESS' },
+    { path: '/chat', icon: MessageSquare, label: 'AI CHAT' },
     { path: '/profile', icon: User, label: 'PROFILE' },
   ];
 

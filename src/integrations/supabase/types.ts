@@ -46,11 +46,59 @@ export type Database = {
           },
         ]
       }
+      daily_quest_assignments: {
+        Row: {
+          assigned_date: string | null
+          created_at: string | null
+          id: string
+          main_qod: string | null
+          punishment_quests: string[] | null
+          small_quests: string[] | null
+          user_id: string | null
+        }
+        Insert: {
+          assigned_date?: string | null
+          created_at?: string | null
+          id?: string
+          main_qod?: string | null
+          punishment_quests?: string[] | null
+          small_quests?: string[] | null
+          user_id?: string | null
+        }
+        Update: {
+          assigned_date?: string | null
+          created_at?: string | null
+          id?: string
+          main_qod?: string | null
+          punishment_quests?: string[] | null
+          small_quests?: string[] | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_quest_assignments_main_qod_fkey"
+            columns: ["main_qod"]
+            isOneToOne: false
+            referencedRelation: "quests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_quest_assignments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       quests: {
         Row: {
           created_at: string | null
           description: string | null
           id: string
+          is_punishment: boolean | null
+          quest_category: string | null
+          requires_validation: boolean | null
           title: string
           type: string | null
           xp_reward: number | null
@@ -59,6 +107,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_punishment?: boolean | null
+          quest_category?: string | null
+          requires_validation?: boolean | null
           title: string
           type?: string | null
           xp_reward?: number | null
@@ -67,6 +118,9 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
+          is_punishment?: boolean | null
+          quest_category?: string | null
+          requires_validation?: boolean | null
           title?: string
           type?: string | null
           xp_reward?: number | null
@@ -107,25 +161,37 @@ export type Database = {
       }
       user_quests: {
         Row: {
+          assigned_date: string | null
           completed_at: string | null
           id: string
+          is_main_qod: boolean | null
           quest_id: string | null
           status: string | null
+          streak_count: number | null
           user_id: string | null
+          validation_status: string | null
         }
         Insert: {
+          assigned_date?: string | null
           completed_at?: string | null
           id?: string
+          is_main_qod?: boolean | null
           quest_id?: string | null
           status?: string | null
+          streak_count?: number | null
           user_id?: string | null
+          validation_status?: string | null
         }
         Update: {
+          assigned_date?: string | null
           completed_at?: string | null
           id?: string
+          is_main_qod?: boolean | null
           quest_id?: string | null
           status?: string | null
+          streak_count?: number | null
           user_id?: string | null
+          validation_status?: string | null
         }
         Relationships: [
           {
@@ -147,29 +213,95 @@ export type Database = {
       users: {
         Row: {
           created_at: string | null
+          daily_availability: string | null
           email: string | null
+          happy_activities: string[] | null
           id: string
           level: number | null
+          lifestyle_habits: string[] | null
+          motivation_style: string | null
           name: string | null
+          onboarding_completed: boolean | null
+          preferred_quest_types: string[] | null
+          stress_level: number | null
+          wellness_goals: string[] | null
           xp_points: number | null
         }
         Insert: {
           created_at?: string | null
+          daily_availability?: string | null
           email?: string | null
+          happy_activities?: string[] | null
           id?: string
           level?: number | null
+          lifestyle_habits?: string[] | null
+          motivation_style?: string | null
           name?: string | null
+          onboarding_completed?: boolean | null
+          preferred_quest_types?: string[] | null
+          stress_level?: number | null
+          wellness_goals?: string[] | null
           xp_points?: number | null
         }
         Update: {
           created_at?: string | null
+          daily_availability?: string | null
           email?: string | null
+          happy_activities?: string[] | null
           id?: string
           level?: number | null
+          lifestyle_habits?: string[] | null
+          motivation_style?: string | null
           name?: string | null
+          onboarding_completed?: boolean | null
+          preferred_quest_types?: string[] | null
+          stress_level?: number | null
+          wellness_goals?: string[] | null
           xp_points?: number | null
         }
         Relationships: []
+      }
+      xp_transactions: {
+        Row: {
+          created_at: string | null
+          id: string
+          quest_id: string | null
+          transaction_type: string
+          user_id: string | null
+          xp_change: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          quest_id?: string | null
+          transaction_type: string
+          user_id?: string | null
+          xp_change: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          quest_id?: string | null
+          transaction_type?: string
+          user_id?: string | null
+          xp_change?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "xp_transactions_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "quests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "xp_transactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -177,6 +309,10 @@ export type Database = {
     }
     Functions: {
       assign_daily_quests_to_user: {
+        Args: { user_uuid: string }
+        Returns: undefined
+      }
+      assign_personalized_daily_quests: {
         Args: { user_uuid: string }
         Returns: undefined
       }

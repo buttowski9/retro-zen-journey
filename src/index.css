@@ -11,11 +11,11 @@
     --pixel-surface: 25 20% 12%;
     --pixel-foreground: 35 15% 85%;
     
-    /* Warm gaming accent colors */
-    --pixel-primary: 25 65% 55%;        /* Warm brown */
-    --pixel-primary-glow: 35 70% 65%;   /* Lighter brown */
-    --pixel-secondary: 45 35% 45%;      /* Beige */
-    --pixel-accent: 35 85% 65%;         /* Warm orange */
+    /* Brown-Orange Pixel Theme */
+    --pixel-primary: 25 100% 60%;       /* Warm orange */
+    --pixel-primary-glow: 30 85% 65%;   /* Brighter orange */
+    --pixel-secondary: 20 90% 55%;      /* Deeper orange */
+    --pixel-accent: 35 80% 45%;         /* Dark orange border */
     --pixel-warning: 40 90% 60%;        /* Golden yellow */
     --pixel-error: 10 85% 55%;          /* Warm red */
     

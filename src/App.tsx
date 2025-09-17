@@ -4,11 +4,11 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./hooks/useAuth";
-import Home from "./pages/Home";
-import GetStarted from "./pages/GetStarted";
-import MentalStateInput from "./pages/MentalStateInput";
-import Dashboard from "./pages/Dashboard";
-import ChatCompanion from "./pages/ChatCompanion";
+import EnhancedHome from "./pages/EnhancedHome";
+import OnboardingFlow from "./pages/OnboardingFlow";
+import EnhancedDashboard from "./pages/EnhancedDashboard";
+import EnhancedChatCompanion from "./pages/EnhancedChatCompanion";
+import ProgressPage from "./pages/ProgressPage";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -23,12 +23,12 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Home />} />
+            <Route path="/" element={<EnhancedHome />} />
             <Route path="/auth" element={<Auth />} />
-            <Route path="/get-started" element={<GetStarted />} />
-            <Route path="/mental-state" element={<MentalStateInput />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/chat" element={<ChatCompanion />} />
+            <Route path="/onboarding" element={<OnboardingFlow />} />
+            <Route path="/dashboard" element={<EnhancedDashboard />} />
+            <Route path="/chat" element={<EnhancedChatCompanion />} />
+            <Route path="/progress" element={<ProgressPage />} />
             <Route path="/profile" element={<Profile />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
