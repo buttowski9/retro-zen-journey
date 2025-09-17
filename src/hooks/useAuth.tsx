@@ -67,6 +67,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         .single();
 
       if (!existingUser) {
+        // Create user profile
         const { error } = await supabase
           .from('users')
           .insert([
@@ -81,6 +82,23 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
         if (error) {
           console.error('Error creating user profile:', error);
+          return;
+        }
+
+        // Auto-assign daily quests to new user
+        try {
+          const { error: assignError } = await supabase
+            .rpc('assign_daily_quests_to_user', { 
+              user_uuid: user.id 
+            });
+
+          if (assignError) {
+            console.error('Error assigning quests:', assignError);
+          } else {
+            toast.success('Welcome! Daily quests assigned to your adventure!');
+          }
+        } catch (questError) {
+          console.error('Error in quest assignment:', questError);
         }
       }
     } catch (error) {
