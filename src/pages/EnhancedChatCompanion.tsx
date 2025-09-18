@@ -119,7 +119,17 @@ const EnhancedChatCompanion = () => {
     const lowerMessage = message.toLowerCase();
     const userName = profile?.name || 'friend';
     
-    // Get recent context from chat history
+    // First, check if this is within our scope (mental wellness only)
+    if (!isWellnessRelated(lowerMessage)) {
+      return `Hey ${userName} 💙 I'm your wellness companion, so I focus on helping with things like stress, anxiety, motivation, healthy habits, and student challenges. Is there something about your mental wellness or personal growth you'd like to talk about instead? I'm here to support you! 😊`;
+    }
+
+    // Crisis detection - highest priority
+    if (detectCrisis(lowerMessage)) {
+      return handleCrisisResponse(userName);
+    }
+    
+    // Get recent context from chat history and user profile
     const recentMessages = chatHistory.slice(-6);
     const hasDiscussedStress = recentMessages.some(msg => 
       msg.content.toLowerCase().includes('stress') || 
@@ -130,6 +140,11 @@ const EnhancedChatCompanion = () => {
       msg.content.toLowerCase().includes('sleep') || 
       msg.content.toLowerCase().includes('tired')
     );
+
+    // Get user goals and preferences for personalization
+    const userGoals = profile?.wellness_goals || [];
+    const stressLevel = profile?.stress_level || 5;
+    const motivationStyle = profile?.motivation_style || 'encouraging';
 
     // Detect emotional tone and intensity
     const detectMood = (message: string) => {
@@ -145,32 +160,73 @@ const EnhancedChatCompanion = () => {
 
     const mood = detectMood(lowerMessage);
     
-    // Stress/Anxiety responses with quest integration
+    // Stress/Anxiety responses with enhanced personalization
     if (lowerMessage.includes('stressed') || lowerMessage.includes('anxiety') || lowerMessage.includes('anxious')) {
       suggestQuestForEmotion('stress');
+      
+      // Reference their goals if relevant
+      const stressGoal = userGoals.find(goal => goal.toLowerCase().includes('stress') || goal.toLowerCase().includes('calm'));
+      const goalMessage = stressGoal ? ` I remember you're working on ${stressGoal.toLowerCase()}, so this is totally connected to that. ` : ' ';
+      
       if (hasDiscussedStress) {
-        return `Hey ${userName}, I notice stress keeps coming up for you. Have you tried the breathing exercise I mentioned earlier? I just assigned you a quick 2-minute breathing quest - it might really help right now. What's been the biggest stressor today?`;
+        return `Hey ${userName}, stress is showing up again for you.${goalMessage}Have you tried the breathing technique from our last chat? I just assigned you a 2-minute reset quest. 
+
+What would help more right now - talking through what's stressing you out, or would you prefer I suggest some quick coping strategies? Your choice! 💙`;
       }
       
       if (mood === 'high_negative') {
-        return `${userName}, I can feel how overwhelmed you're feeling right now 💙 That sounds really intense. Take a deep breath with me for a second. I'm going to give you a gentle breathing quest to help you reset. What's making you feel most anxious right now?`;
+        return `${userName}, I can really feel the intensity of what you're going through right now 💙${goalMessage}This sounds overwhelming, and I'm here with you. I just assigned a gentle breathing quest to help ground you.
+
+Take your time - what's making you feel most anxious right now? Or would you rather try the breathing exercise first and then talk? Whatever feels right for you.`;
       }
       
-      return `I hear you're feeling stressed, ${userName} 💙 That's tough, but you're not alone in this. I've got a calming quest ready for you. Want to tell me more about what's been weighing on your mind? Sometimes just naming it helps.`;
+      if (motivationStyle === 'gentle') {
+        return `That sounds really tough, ${userName} 💙${goalMessage}Stress can feel so heavy. I've got a calming quest ready for you that's super gentle.
+
+Want to share what's been weighing on your mind? Or would you prefer to try something calming first? I'm here either way.`;
+      }
+      
+      return `I hear you're feeling stressed, ${userName} 💙${goalMessage}You're definitely not alone in this - stress is so human. I just assigned you a calming quest.
+
+What would be most helpful - diving into what's causing the stress, or trying a quick reset activity first? What sounds better to you right now?`;
     }
 
-    // Sleep issues with personalized approach
+    // Sleep issues with enhanced personalization and choices
     if (lowerMessage.includes('tired') || lowerMessage.includes('sleep') || lowerMessage.includes('exhausted')) {
+      suggestQuestForEmotion('sleep');
+      
       if (hasDiscussedSleep) {
-        return `${userName}, sleep troubles again? 😴 I remember we talked about this. How did you sleep last night? I'm thinking of assigning you a gentle evening routine quest. Do you think that would help, or would you prefer something else?`;
+        return `${userName}, sleep challenges are coming up again 😴 I remember our conversation about this. How have you been sleeping since we last talked?
+
+I'm thinking of a few options:
+• A gentle evening routine quest
+• Some sleep hygiene tips
+• A quick energy boost if you need to stay awake
+
+What feels most helpful right now?`;
       }
       
-      const stressLevel = profile?.stress_level || 5;
       if (stressLevel > 7) {
-        return `${userName}, sleep is extra important when stress is high 😴 Your stress level tells me your mind might be racing at bedtime. Want to try a wind-down quest? What's been keeping you up - thoughts or just can't get comfortable?`;
+        return `${userName}, sleep gets so much harder when stress is high 😴 Your stress level tells me your mind might be racing at bedtime. I just assigned you a wind-down quest.
+
+What's been the biggest sleep disruptor lately?
+• Racing thoughts
+• Physical restlessness  
+• Worry about tomorrow
+• Something else?
+
+Let's tackle this together!`;
       }
       
-      return `Sleep is everything, ${userName}! 😴 What's been messing with your sleep lately? Is it your mind being busy, or something else? I might have a perfect bedtime quest for you.`;
+      return `Sleep affects everything, ${userName}! 😴 I just assigned you a sleep support quest.
+
+What's been the main issue lately?
+• Trouble falling asleep
+• Waking up during the night
+• Not feeling rested
+• Just feeling exhausted during the day
+
+Once I know more, I can give you the most helpful suggestions!`;
     }
 
     // Sad/down responses with empathy
@@ -223,18 +279,128 @@ const EnhancedChatCompanion = () => {
       }
     }
 
-    // Default responses with personality and choices
-    const defaultResponses = [
-      `I'm really glad you shared that with me, ${userName} 💙 What's been on your mind today? Want to talk it through or would you prefer I suggest a quick wellness quest?`,
-      `Thanks for opening up, ${userName}. I'm here to listen and support you. What would feel most helpful right now - talking more about this or trying something to shift your energy?`,
-      `That sounds meaningful to you, ${userName}. How are you feeling about it? Should we explore this together or would you like me to suggest a quest that might help?`,
-      `I appreciate you trusting me with this, ${userName} 💙 What's the most important thing on your heart right now? Want to dive into it or try a wellness activity together?`
-    ];
+    // Enhanced default responses with better personalization and choices
+    const getPersonalizedDefault = (): string => {
+      const currentHour = new Date().getHours();
+      const timeGreeting = currentHour < 12 ? 'morning' : currentHour < 17 ? 'afternoon' : 'evening';
+      
+      // Reference recent conversations if available
+      if (recentMessages.length > 2) {
+        const lastTopics = recentMessages
+          .filter(m => m.type === 'user')
+          .slice(-2)
+          .map(m => m.content.toLowerCase());
+        
+        if (lastTopics.some(topic => topic.includes('stress'))) {
+          return `Thanks for sharing more, ${userName}. I remember we've been talking about stress lately. How are you feeling about everything right now? 
 
-    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+Would you like to:
+• Continue working through the stress stuff
+• Try a quick mood reset quest
+• Talk about something completely different
+
+I'm here for whatever feels right! 💙`;
+        }
+      }
+      
+      // Use user goals for personalized responses
+      if (userGoals.length > 0) {
+        const primaryGoal = userGoals[0];
+        return `I appreciate you sharing with me, ${userName} 💙 Since I know you're focused on ${primaryGoal.toLowerCase()}, I'm wondering how that's been going for you lately.
+
+What would be most helpful this ${timeGreeting}:
+• Talking through what's on your mind
+• Getting some motivation for your ${primaryGoal.toLowerCase()} journey
+• A quick wellness quest to boost your mood
+
+What sounds good to you?`;
+      }
+      
+      // Motivational style-based responses
+      if (motivationStyle === 'gentle') {
+        return `Thanks for trusting me with your thoughts, ${userName} 💙 I'm here to listen and support you however feels best.
+
+What would feel most comfortable:
+• Talking through what's on your heart
+• Some gentle encouragement
+• A calming wellness activity
+
+Take your time - no pressure at all.`;
+      }
+      
+      if (motivationStyle === 'energetic') {
+        return `Hey ${userName}! 💙 Love that you're here chatting with me this ${timeGreeting}! 
+
+What's calling to you right now:
+• Diving into what's on your mind
+• Getting pumped up with some motivation
+• Trying an energizing quest together
+
+Let's make this ${timeGreeting} awesome! What sounds fun?`;
+      }
+      
+      // Default encouraging response
+      return `I'm really glad you're here, ${userName} 💙 What's been on your mind this ${timeGreeting}? 
+
+I'm here to:
+• Listen to whatever you want to share
+• Offer support and advice
+• Suggest wellness activities that might help
+
+What would feel most helpful right now?`;
+    };
+
+    return getPersonalizedDefault();
   };
 
-  // Dynamic quest assignment based on emotions
+  // Helper functions for enhanced AI assistant
+  const isWellnessRelated = (message: string): boolean => {
+    const wellnessKeywords = [
+      'stress', 'anxiety', 'anxious', 'worried', 'overwhelmed', 'tired', 'exhausted', 
+      'sad', 'depressed', 'down', 'happy', 'good', 'great', 'motivation', 'mood',
+      'sleep', 'habits', 'routine', 'exercise', 'meditation', 'breathe', 'breathing',
+      'school', 'study', 'exam', 'work', 'productivity', 'focus', 'procrastination',
+      'lonely', 'friends', 'relationship', 'confidence', 'self-esteem', 'pressure',
+      'goal', 'goals', 'wellness', 'health', 'mental health', 'feeling', 'feelings',
+      'emotion', 'emotions', 'cope', 'coping', 'help', 'support', 'advice',
+      'bored', 'boredom', 'energy', 'lazy', 'unmotivated', 'stuck', 'frustrated',
+      'angry', 'upset', 'confused', 'lost', 'hopeless', 'hopeful', 'excited',
+      'nervous', 'scared', 'fear', 'phobia', 'panic', 'calm', 'peace', 'relax'
+    ];
+    
+    const hasWellnessKeyword = wellnessKeywords.some(keyword => message.includes(keyword));
+    const isGreeting = /^(hi|hello|hey|sup|what's up|how are you)/i.test(message.trim());
+    const isShort = message.length < 50 && /how|feel|doing|today|life|ok|fine|good|bad/.test(message);
+    
+    return hasWellnessKeyword || isGreeting || isShort;
+  };
+
+  const detectCrisis = (message: string): boolean => {
+    const crisisKeywords = [
+      'suicide', 'kill myself', 'end it all', 'want to die', 'better off dead',
+      'hurt myself', 'self harm', 'cutting', 'overdose', 'can\'t go on',
+      'no point', 'give up', 'worthless', 'hate myself', 'everyone hates me'
+    ];
+    
+    return crisisKeywords.some(keyword => message.includes(keyword));
+  };
+
+  const handleCrisisResponse = (userName: string): string => {
+    return `${userName}, I'm really glad you trusted me with this. What you're feeling sounds incredibly heavy, and I want you to know that your life has value 💜
+
+I care about your safety, and I think it would be really helpful to talk to someone who can provide professional support right now. Here are some resources:
+
+🇮🇳 India:
+• iCall: 9152987821 (Mon-Sat, 8am-10pm)
+• Snehi: 91-22-27546669
+
+🌍 International:
+• Crisis Text Line: Text "HELLO" to 741741
+
+You don't have to go through this alone. Would you be willing to reach out to one of these resources? In the meantime, I'm here to listen. What's been the hardest part today?`;
+  };
+
+  // Dynamic quest assignment based on emotions and user preferences
   const suggestQuestForEmotion = async (emotion: string) => {
     if (!user?.id) {
       console.error('No user ID available for quest assignment');
@@ -242,13 +408,31 @@ const EnhancedChatCompanion = () => {
     }
 
     const questMappings = {
-      'stress': ['Breathing Exercise', 'Mindful Walk', '5-Minute Meditation'],
-      'boredom': ['Creative Journaling', 'Quick Dance Break', 'Gratitude List'],
-      'overwhelmed': ['Grounding Exercise', 'Breathing Exercise', 'Organize Space'],
-      'study_stress': ['Pomodoro Focus', 'Study Break Walk', 'Breathing Exercise']
+      'stress': ['Breathing Exercise', 'Mindful Walk', '5-Minute Meditation', 'Progressive Muscle Relaxation'],
+      'boredom': ['Creative Journaling', 'Quick Dance Break', 'Gratitude List', 'Learn Something New'],
+      'overwhelmed': ['Grounding Exercise', 'Breathing Exercise', 'Organize Space', 'Break Tasks Down'],
+      'study_stress': ['Pomodoro Focus', 'Study Break Walk', 'Breathing Exercise', 'Study Space Reset'],
+      'sleep': ['Evening Wind-Down', 'Sleep Meditation', 'Digital Detox Hour', 'Gratitude Journaling'],
+      'motivation': ['Small Win Challenge', 'Energy Boost Walk', 'Goal Setting', 'Inspiration Reading'],
+      'social': ['Reach Out Challenge', 'Kindness Quest', 'Social Confidence', 'Community Connection']
     };
 
-    const possibleQuests = questMappings[emotion as keyof typeof questMappings] || ['Mindful Walk'];
+    // Consider user preferences from profile
+    const userPreferences = profile?.preferred_quest_types || [];
+    const motivationStyle = profile?.motivation_style || 'encouraging';
+    
+    let possibleQuests = questMappings[emotion as keyof typeof questMappings] || ['Mindful Walk'];
+    
+    // Filter based on user preferences if available
+    if (userPreferences.length > 0) {
+      const preferredQuests = possibleQuests.filter(quest => 
+        userPreferences.some(pref => quest.toLowerCase().includes(pref.toLowerCase()))
+      );
+      if (preferredQuests.length > 0) {
+        possibleQuests = preferredQuests;
+      }
+    }
+
     const questTitle = possibleQuests[Math.floor(Math.random() * possibleQuests.length)];
     
     // Find quest in database and assign it
@@ -357,11 +541,66 @@ const EnhancedChatCompanion = () => {
   };
 
   const suggestQuest = (type: string) => {
+    const userName = profile?.name || 'friend';
     const questSuggestions = {
-      breathing: "Try this: Take 4 deep breaths in for 4 counts, hold for 4, then out for 6. This activates your calm response! 🫁",
-      walk: "How about a 10-minute mindful walk? Even around your house or yard. Focus on what you see, hear, and feel. Nature (even a houseplant!) can be really grounding 🌱",
-      journal: "Sometimes writing helps clear our minds. Try writing down 3 things - doesn't matter what, just whatever comes to mind. No pressure to make it perfect! ✍️",
-      gratitude: "When things feel heavy, sometimes tiny gratitudes help. Can you think of one small thing you're thankful for today? Even something as simple as a warm drink or comfortable bed 💙"
+      breathing: `Perfect choice, ${userName}! 🫁 Here's a super effective technique: 
+      
+**4-7-8 Breathing:**
+• Breathe in for 4 counts
+• Hold for 7 counts  
+• Breathe out for 8 counts
+• Repeat 3-4 times
+
+This actually activates your nervous system's calm response. Try it now and let me know how it feels! Want me to assign you a breathing quest too?`,
+      
+      walk: `Great idea, ${userName}! 🚶 Even a 5-minute walk can completely shift your energy.
+
+**Mindful Walking Tips:**
+• Notice 3 things you can see
+• Listen for 2 different sounds
+• Feel 1 physical sensation (ground, air, etc.)
+
+Whether it's around your room, house, or outside - movement + mindfulness = magic! Want a walking quest to keep you motivated?`,
+      
+      journal: `Love this choice, ${userName}! ✍️ Writing can unlock so much clarity.
+
+**Quick Journal Prompts:**
+• What's one thing on your mind right now?
+• How are you feeling in your body?
+• What's one small thing you're grateful for?
+
+No pressure to be perfect or profound - just let your thoughts flow. Should I assign you a journaling quest to keep this momentum going?`,
+      
+      gratitude: `Beautiful, ${userName}! 💙 Gratitude literally rewires your brain for positivity.
+
+**Gratitude Micro-Practice:**
+Think of something tiny you're thankful for right now. Could be:
+• Your favorite pillow
+• A friend who gets you
+• That first sip of a warm drink
+• Having a safe place to be
+
+What came to mind for you? Want me to give you a daily gratitude quest?`,
+
+      energy: `Yes, ${userName}! ⚡ Let's get your energy flowing!
+
+**2-Minute Energy Boost:**
+• 10 jumping jacks (or arm circles if sitting)
+• Take 3 deep breaths
+• Stretch your arms overhead
+• Smile (seriously, it works!)
+
+Your body affects your mood more than you think! Try it and tell me how you feel. Want an energizing quest for later?`,
+
+      focus: `Smart choice, ${userName}! 🎯 Sometimes we just need to reset our mental clarity.
+
+**Focus Reset Technique:**
+• Clear your space of distractions
+• Set a 10-minute timer
+• Pick ONE thing to focus on
+• When your mind wanders, gently bring it back
+
+No judgment on the wandering - that's totally normal! How does your focus feel right now? Want a concentration quest?`
     };
 
     const message: Message = {
@@ -466,36 +705,53 @@ const EnhancedChatCompanion = () => {
           <div ref={messagesEndRef} />
         </div>
 
-        {/* Quick Actions */}
+        {/* Enhanced Quick Actions */}
         <div className="p-4 border-t-2 border-primary">
+          <p className="text-pixel-sm text-muted-foreground mb-3">
+            Need a quick boost? Try these:
+          </p>
           <div className="flex flex-wrap gap-2 mb-4">
             <PixelButton
               size="sm"
               variant="outline"
               onClick={() => suggestQuest('breathing')}
             >
-              🫁 Breathing
+              🫁 2-Min Breathing
             </PixelButton>
             <PixelButton
               size="sm"
               variant="outline"
               onClick={() => suggestQuest('walk')}
             >
-              🚶 Walk
+              🚶 Mindful Walk
             </PixelButton>
             <PixelButton
               size="sm"
               variant="outline"
               onClick={() => suggestQuest('journal')}
             >
-              ✍️ Journal
+              ✍️ Quick Journal
             </PixelButton>
             <PixelButton
               size="sm"
               variant="outline"
               onClick={() => suggestQuest('gratitude')}
             >
-              💙 Gratitude
+              💙 Gratitude Moment
+            </PixelButton>
+            <PixelButton
+              size="sm"
+              variant="outline"
+              onClick={() => suggestQuest('energy')}
+            >
+              ⚡ Energy Boost
+            </PixelButton>
+            <PixelButton
+              size="sm"
+              variant="outline"
+              onClick={() => suggestQuest('focus')}
+            >
+              🎯 Focus Reset
             </PixelButton>
           </div>
 
