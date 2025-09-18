@@ -138,70 +138,65 @@ const EnhancedDashboard = () => {
     }
   };
 
-  const completeQuest = async (userQuestId: string, requiresValidation: boolean) => {
+  const completeQuest = async (userQuestId: string) => {
     try {
-      const newStatus = requiresValidation ? 'pending_validation' : 'completed';
-      
-      console.log(`Attempting to complete quest ${userQuestId} with status: ${newStatus}`);
+      // Always complete immediately - no validation needed
+      console.log(`Completing quest ${userQuestId} directly`);
       
       const { error } = await supabase
         .from('user_quests')
         .update({ 
-          status: newStatus,
-          validation_status: requiresValidation ? 'pending' : 'approved',
+          status: 'completed',
+          validation_status: 'approved',
           completed_at: new Date().toISOString()
         })
         .eq('id', userQuestId)
-        .eq('user_id', user?.id); // Add user_id check for security
+        .eq('user_id', user?.id);
 
       if (error) {
         console.error('Database error:', error);
         throw error;
       }
 
-      if (requiresValidation) {
-        toast.success('Quest submitted for validation! 🎯');
-      } else {
-        // Add XP immediately for non-validation quests
-        const quest = todaysQuests.find(q => q.id === userQuestId);
-        if (quest) {
-          console.log(`Adding ${quest.quests.xp_reward} XP for quest: ${quest.quests.title}`);
-          
-          const { error: xpError } = await supabase
-            .from('xp_transactions')
-            .insert({
-              user_id: user?.id,
-              quest_id: quest.quest_id,
-              xp_change: quest.quests.xp_reward,
-              transaction_type: 'quest_completion'
-            });
+      // Always add XP immediately
+      const quest = todaysQuests.find(q => q.id === userQuestId);
+      if (quest) {
+        console.log(`Adding ${quest.quests.xp_reward} XP for quest: ${quest.quests.title}`);
+        
+        const { error: xpError } = await supabase
+          .from('xp_transactions')
+          .insert({
+            user_id: user?.id,
+            quest_id: quest.quest_id,
+            xp_change: quest.quests.xp_reward,
+            transaction_type: 'quest_completion'
+          });
 
-          if (xpError) {
-            console.error('XP transaction error:', xpError);
+        if (xpError) {
+          console.error('XP transaction error:', xpError);
+        } else {
+          // Update user XP and level
+          const newXP = (profile?.xp_points || 0) + quest.quests.xp_reward;
+          const newLevel = Math.floor(newXP / 100) + 1;
+          
+          const { error: userUpdateError } = await supabase
+            .from('users')
+            .update({ 
+              xp_points: newXP,
+              level: newLevel
+            })
+            .eq('id', user?.id);
+          
+          if (userUpdateError) {
+            console.error('User update error:', userUpdateError);
           } else {
-            // Update user XP
-            const newXP = (profile?.xp_points || 0) + quest.quests.xp_reward;
-            const newLevel = Math.floor(newXP / 100) + 1;
-            
-            const { error: userUpdateError } = await supabase
-              .from('users')
-              .update({ 
-                xp_points: newXP,
-                level: newLevel
-              })
-              .eq('id', user?.id);
-            
-            if (userUpdateError) {
-              console.error('User update error:', userUpdateError);
-            } else {
-              console.log(`User XP updated: ${newXP}, Level: ${newLevel}`);
-              toast.success(`Quest completed! +${quest.quests.xp_reward} XP ✨`);
-            }
+            console.log(`User XP updated: ${newXP}, Level: ${newLevel}`);
+            toast.success(`Quest completed! +${quest.quests.xp_reward} XP ✨`);
           }
         }
       }
 
-      // Refresh data
+      // Refresh data to update UI immediately
       await fetchUserData();
     } catch (error) {
       console.error('Error completing quest:', error);
@@ -324,7 +319,7 @@ const EnhancedDashboard = () => {
                   {mainQOD.status === 'pending' && (
                     <PixelButton
                       size="sm"
-                      onClick={() => completeQuest(mainQOD.id, mainQOD.quests.requires_validation)}
+                      onClick={() => completeQuest(mainQOD.id)}
                     >
                       Complete Quest
                     </PixelButton>
@@ -383,7 +378,7 @@ const EnhancedDashboard = () => {
                         <PixelButton
                           size="sm"
                           variant="outline"
-                          onClick={() => completeQuest(quest.id, quest.quests.requires_validation)}
+                          onClick={() => completeQuest(quest.id)}
                         >
                           ✓
                         </PixelButton>
