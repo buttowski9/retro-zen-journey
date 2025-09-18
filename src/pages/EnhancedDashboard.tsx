@@ -63,9 +63,15 @@ const EnhancedDashboard = () => {
         .from('users')
         .select('*')
         .eq('id', user?.id)
-        .single();
+        .maybeSingle();
 
       if (profileError) throw profileError;
+
+      if (!profileData) {
+        toast.error('Profile not found');
+        navigate('/auth');
+        return;
+      }
 
       if (!profileData.onboarding_completed) {
         navigate('/onboarding');
@@ -136,15 +142,22 @@ const EnhancedDashboard = () => {
     try {
       const newStatus = requiresValidation ? 'pending_validation' : 'completed';
       
+      console.log(`Attempting to complete quest ${userQuestId} with status: ${newStatus}`);
+      
       const { error } = await supabase
         .from('user_quests')
         .update({ 
           status: newStatus,
-          validation_status: requiresValidation ? 'pending' : 'approved'
+          validation_status: requiresValidation ? 'pending' : 'approved',
+          completed_at: new Date().toISOString()
         })
-        .eq('id', userQuestId);
+        .eq('id', userQuestId)
+        .eq('user_id', user?.id); // Add user_id check for security
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw error;
+      }
 
       if (requiresValidation) {
         toast.success('Quest submitted for validation! 🎯');
@@ -152,21 +165,25 @@ const EnhancedDashboard = () => {
         // Add XP immediately for non-validation quests
         const quest = todaysQuests.find(q => q.id === userQuestId);
         if (quest) {
+          console.log(`Adding ${quest.quests.xp_reward} XP for quest: ${quest.quests.title}`);
+          
           const { error: xpError } = await supabase
             .from('xp_transactions')
             .insert({
               user_id: user?.id,
               quest_id: quest.quest_id,
               xp_change: quest.quests.xp_reward,
-              transaction_type: 'earned'
+              transaction_type: 'quest_completion'
             });
 
-          if (!xpError) {
+          if (xpError) {
+            console.error('XP transaction error:', xpError);
+          } else {
             // Update user XP
             const newXP = (profile?.xp_points || 0) + quest.quests.xp_reward;
             const newLevel = Math.floor(newXP / 100) + 1;
             
-            await supabase
+            const { error: userUpdateError } = await supabase
               .from('users')
               .update({ 
                 xp_points: newXP,
@@ -174,7 +191,12 @@ const EnhancedDashboard = () => {
               })
               .eq('id', user?.id);
             
-            toast.success(`Quest completed! +${quest.quests.xp_reward} XP ✨`);
+            if (userUpdateError) {
+              console.error('User update error:', userUpdateError);
+            } else {
+              console.log(`User XP updated: ${newXP}, Level: ${newLevel}`);
+              toast.success(`Quest completed! +${quest.quests.xp_reward} XP ✨`);
+            }
           }
         }
       }
@@ -183,7 +205,7 @@ const EnhancedDashboard = () => {
       await fetchUserData();
     } catch (error) {
       console.error('Error completing quest:', error);
-      toast.error('Failed to complete quest');
+      toast.error(`Failed to complete quest: ${error.message}`);
     }
   };
 
