@@ -1,17 +1,27 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useUserProfile, useQuests } from '@/hooks/useSupabaseData';
 import { PixelCard, PixelCardContent, PixelCardHeader, PixelCardTitle } from '@/components/ui/pixel-card';
 import PixelNavigation from '@/components/pixel/PixelNavigation';
 import PixelCharacter from '@/components/pixel/PixelCharacter';
 import XPBar from '@/components/pixel/XPBar';
 import PixelAvatar from '@/components/pixel/PixelAvatar';
-import { Trophy, Medal, Star, Calendar, Zap, Heart, Target } from 'lucide-react';
+import { Trophy, Medal, Star, Calendar, Zap, Heart, Target, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import pixelStarryNight from '@/assets/pixel-starry-night.png';
 
 const Profile = () => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const { profile, loading: profileLoading } = useUserProfile();
+  const { userQuests, loading: questsLoading } = useQuests();
 
   useEffect(() => {
     if (!user) {
@@ -19,7 +29,7 @@ const Profile = () => {
     }
   }, [user, navigate]);
 
-  if (!user) {
+  if (!user || profileLoading || questsLoading) {
     return (
       <main className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
@@ -30,19 +40,88 @@ const Profile = () => {
     );
   }
 
-  // Mock data for now - will connect to Supabase once types are fixed
-  const level = 3;
-  const currentXP = 125;
-  const maxXP = 200;
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/');
+  };
+
+  // Calculate real stats from Supabase data
+  const level = profile?.level || 1;
+  const currentXP = profile?.xp_points || 0;
+  const maxXP = level * 100; // 100 XP per level
+  
+  const completedQuests = userQuests.filter(q => q.status === 'completed').length;
+  const todaysQuests = userQuests.filter(q => {
+    const today = new Date().toDateString();
+    const questDate = new Date(q.assigned_date).toDateString();
+    return today === questDate;
+  });
+  
+  // Calculate streak (consecutive days with completed quests)
+  const calculateStreak = () => {
+    const completedDates = userQuests
+      .filter(q => q.status === 'completed' && q.completed_at)
+      .map(q => new Date(q.completed_at).toDateString())
+      .filter((date, index, arr) => arr.indexOf(date) === index)
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    
+    let streak = 0;
+    const today = new Date();
+    
+    for (let i = 0; i < completedDates.length; i++) {
+      const checkDate = new Date(today);
+      checkDate.setDate(today.getDate() - i);
+      
+      if (completedDates.includes(checkDate.toDateString())) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
+  };
+
+  const currentStreak = calculateStreak();
+  const activeDays = userQuests
+    .map(q => new Date(q.assigned_date).toDateString())
+    .filter((date, index, arr) => arr.indexOf(date) === index).length;
+
   const achievements = [
-    { id: 1, name: "FIRST STEPS", description: "Complete your first quest", icon: "🚶", unlocked: true },
-    { id: 2, name: "STREAK MASTER", description: "Maintain a 7-day streak", icon: "🔥", unlocked: true },
-    { id: 3, name: "HYDRATION HERO", description: "Drink water 10 days in a row", icon: "💧", unlocked: true },
+    { 
+      id: 1, 
+      name: "FIRST STEPS", 
+      description: "Complete your first quest", 
+      icon: "🚶", 
+      unlocked: completedQuests > 0 
+    },
+    { 
+      id: 2, 
+      name: "STREAK MASTER", 
+      description: "Maintain a 7-day streak", 
+      icon: "🔥", 
+      unlocked: currentStreak >= 7 
+    },
+    { 
+      id: 3, 
+      name: "QUEST CHAMPION", 
+      description: "Complete 10 quests", 
+      icon: "🏆", 
+      unlocked: completedQuests >= 10 
+    },
+    { 
+      id: 4, 
+      name: "LEVEL UP", 
+      description: "Reach level 3", 
+      icon: "⭐", 
+      unlocked: level >= 3 
+    },
   ];
 
   const unlockedAchievements = achievements.filter(a => a.unlocked);
   const nextLevelXP = maxXP - currentXP;
-  const progressPercentage = (currentXP / maxXP) * 100;
+  const progressPercentage = Math.min((currentXP / maxXP) * 100, 100);
+  const avgXPPerDay = activeDays > 0 ? Math.round(currentXP / activeDays) : 0;
 
   return (
     <main 
@@ -58,7 +137,7 @@ const Profile = () => {
       <div className="absolute inset-0 bg-background/85"></div>
       
       <div className="max-w-md mx-auto space-y-6 relative z-10">
-        {/* Header with Character */}
+        {/* Header with Character and Sign Out */}
         <PixelCard className="p-4 hud-element">
           <div className="flex items-center gap-3">
             <PixelCharacter size="md" />
@@ -68,7 +147,22 @@ const Profile = () => {
                 YOUR WELLNESS JOURNEY
               </p>
             </div>
-            <Trophy className="w-5 h-5 text-pixel-accent" />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="btn-pixel">
+                  <Trophy className="w-4 h-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem 
+                  onClick={handleSignOut}
+                  className="text-pixel-error cursor-pointer"
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </PixelCard>
 
@@ -79,8 +173,8 @@ const Profile = () => {
               <PixelAvatar size="lg" mood="happy" className="mx-auto" />
               
               <div>
-                <h2 className="text-pixel font-pixel text-primary mb-2">
-                  {user.user_metadata?.name || 'ADVENTURER'}
+              <h2 className="text-pixel font-pixel text-primary mb-2">
+                  {profile?.name || user.user_metadata?.name || 'ADVENTURER'}
                 </h2>
                 <p className="text-pixel-sm text-muted-foreground font-pixel">
                   JOINED {new Date(user.created_at).toLocaleDateString()}
@@ -106,7 +200,7 @@ const Profile = () => {
             <PixelCardContent className="p-4 text-center">
               <Target className="w-6 h-6 text-pixel-accent mx-auto mb-2" />
               <div className="text-pixel font-pixel text-pixel-accent">
-                {12}
+                {completedQuests}
               </div>
               <div className="text-pixel-sm text-muted-foreground">
                 QUESTS DONE
@@ -118,7 +212,7 @@ const Profile = () => {
             <PixelCardContent className="p-4 text-center">
               <Zap className="w-6 h-6 text-pixel-warning mx-auto mb-2" />
               <div className="text-pixel font-pixel text-pixel-warning">
-                {7}
+                {currentStreak}
               </div>
               <div className="text-pixel-sm text-muted-foreground">
                 DAY STREAK
@@ -143,7 +237,7 @@ const Profile = () => {
                   <span className="text-pixel-sm font-pixel">TOTAL XP</span>
                 </div>
                 <div className="text-pixel text-primary font-pixel">
-                  {350}
+                  {currentXP}
                 </div>
               </div>
 
@@ -153,7 +247,7 @@ const Profile = () => {
                   <span className="text-pixel-sm font-pixel">ACTIVE DAYS</span>
                 </div>
                 <div className="text-pixel text-pixel-secondary font-pixel">
-                  {15}
+                  {activeDays}
                 </div>
               </div>
 
@@ -163,7 +257,7 @@ const Profile = () => {
                   <span className="text-pixel-sm font-pixel">BEST STREAK</span>
                 </div>
                 <div className="text-pixel text-pixel-error font-pixel">
-                  {12}
+                  {currentStreak}
                 </div>
               </div>
 
@@ -173,7 +267,7 @@ const Profile = () => {
                   <span className="text-pixel-sm font-pixel">AVG XP/DAY</span>
                 </div>
                 <div className="text-pixel text-pixel-accent font-pixel">
-                  {23}
+                  {avgXPPerDay}
                 </div>
               </div>
             </div>
