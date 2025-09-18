@@ -109,19 +109,34 @@ export const useQuests = () => {
           completed_at: new Date().toISOString()
         })
         .eq('user_id', user?.id)
-        .eq('quest_id', questId);
+        .eq('quest_id', questId)
+        .eq('status', 'pending'); // Only update if it's currently pending
 
       if (questError) throw questError;
 
       // Get quest details for XP reward
       const { data: quest } = await supabase
         .from('quests')
-        .select('xp_reward')
+        .select('xp_reward, title')
         .eq('id', questId)
         .single();
 
       if (quest) {
-        // Update user XP
+        // Add XP transaction record
+        const { error: xpError } = await supabase
+          .from('xp_transactions')
+          .insert({
+            user_id: user?.id,
+            xp_change: quest.xp_reward || 10,
+            transaction_type: 'quest_completion',
+            quest_id: questId
+          });
+
+        if (xpError) {
+          console.error('Error recording XP transaction:', xpError);
+        }
+
+        // Update user XP and level
         const { data: currentUser } = await supabase
           .from('users')
           .select('xp_points, level')
@@ -140,15 +155,16 @@ export const useQuests = () => {
             })
             .eq('id', user?.id);
 
-          toast.success(`Quest Complete! +${quest.xp_reward || 10} XP`);
+          toast.success(`${quest.title} Complete! +${quest.xp_reward || 10} XP`);
           
           if (newLevel > currentUser.level) {
-            toast.success(`Level Up! You're now level ${newLevel}!`);
+            toast.success(`🎉 Level Up! You're now level ${newLevel}!`);
           }
         }
       }
 
       await fetchUserQuests();
+      console.log(`Quest ${questId} completed successfully`);
     } catch (error) {
       console.error('Error completing quest:', error);
       toast.error('Failed to complete quest');
@@ -162,13 +178,25 @@ export const useQuests = () => {
         .insert([{
           user_id: user?.id,
           quest_id: questId,
-          status: 'pending'
+          status: 'pending',
+          assigned_date: new Date().toISOString().split('T')[0],
+          is_main_qod: false
         }]);
 
-      if (error) throw error;
+      if (error) {
+        // If conflict, it means quest is already assigned
+        if (error.code === '23505') {
+          console.log('Quest already assigned to user');
+          return;
+        }
+        throw error;
+      }
+      
       await fetchUserQuests();
+      console.log(`Quest ${questId} assigned successfully`);
     } catch (error) {
       console.error('Error assigning quest:', error);
+      throw error;
     }
   };
 

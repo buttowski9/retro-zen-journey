@@ -36,7 +36,7 @@ const EnhancedChatCompanion = () => {
     }
     
     loadChatHistory();
-  }, [user, navigate]);
+  }, [user, navigate, profile]); // Add profile to dependencies
 
   useEffect(() => {
     scrollToBottom();
@@ -79,16 +79,36 @@ const EnhancedChatCompanion = () => {
 
       setMessages(formattedMessages);
 
-      // If no chat history, send welcome message
+      // If no chat history, send personalized welcome message
       if (formattedMessages.length === 0) {
         const userName = profile?.name || 'friend';
+        const userGoals = profile?.wellness_goals || [];
+        const stressLevel = profile?.stress_level || 5;
+        
+        let welcomeContent = `Hey ${userName}! 😊 I'm your wellness companion! `;
+        
+        if (userGoals.length > 0) {
+          welcomeContent += `I see you're working on ${userGoals[0]} - that's awesome! `;
+        }
+        
+        if (stressLevel > 7) {
+          welcomeContent += `I notice your stress levels have been high lately. I'm here to help you find some calm. `;
+        } else if (stressLevel < 4) {
+          welcomeContent += `You seem to be managing stress well! Let's keep that positive energy flowing. `;
+        }
+        
+        welcomeContent += `How are you feeling today? I remember our past conversations and I'm here to listen, support you, and help with any challenges. Ready to make today awesome together?`;
+        
         const welcomeMessage: Message = {
           id: 'welcome',
           type: 'companion',
-          content: `Hey ${userName}! 😊 I'm your wellness companion! How are you feeling today? I'm here to listen, support you, and help with any challenges you're facing. Ready to make today awesome together?`,
+          content: welcomeContent,
           timestamp: new Date(),
         };
         setMessages([welcomeMessage]);
+      } else {
+        // If there's chat history, show continuity
+        console.log(`Loaded ${formattedMessages.length} messages from chat history`);
       }
     } catch (error) {
       console.error('Error loading chat history:', error);
@@ -216,6 +236,11 @@ const EnhancedChatCompanion = () => {
 
   // Dynamic quest assignment based on emotions
   const suggestQuestForEmotion = async (emotion: string) => {
+    if (!user?.id) {
+      console.error('No user ID available for quest assignment');
+      return;
+    }
+
     const questMappings = {
       'stress': ['Breathing Exercise', 'Mindful Walk', '5-Minute Meditation'],
       'boredom': ['Creative Journaling', 'Quick Dance Break', 'Gratitude List'],
@@ -223,21 +248,54 @@ const EnhancedChatCompanion = () => {
       'study_stress': ['Pomodoro Focus', 'Study Break Walk', 'Breathing Exercise']
     };
 
-    const possibleQuests = questMappings[emotion] || ['Mindful Walk'];
+    const possibleQuests = questMappings[emotion as keyof typeof questMappings] || ['Mindful Walk'];
     const questTitle = possibleQuests[Math.floor(Math.random() * possibleQuests.length)];
     
     // Find quest in database and assign it
     const matchingQuest = quests.find(q => 
-      q.title.toLowerCase().includes(questTitle.toLowerCase()) ||
-      questTitle.toLowerCase().includes(q.title.toLowerCase())
+      q.title?.toLowerCase().includes(questTitle.toLowerCase()) ||
+      questTitle.toLowerCase().includes(q.title?.toLowerCase())
     );
     
     if (matchingQuest) {
       try {
-        await assignQuest(matchingQuest.id);
+        // Check if quest is already assigned today
+        const { data: existingQuest } = await supabase
+          .from('user_quests')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('quest_id', matchingQuest.id)
+          .eq('assigned_date', new Date().toISOString().split('T')[0])
+          .single();
+
+        if (!existingQuest) {
+          await assignQuest(matchingQuest.id);
+          toast.success(`New quest assigned: ${matchingQuest.title}! Check your dashboard to complete it.`);
+          console.log(`Quest "${matchingQuest.title}" assigned successfully for ${emotion}`);
+        } else {
+          console.log(`Quest "${matchingQuest.title}" already assigned today`);
+        }
       } catch (error) {
         console.error('Error assigning quest:', error);
+        // Try creating a simple quest record
+        try {
+          await supabase
+            .from('user_quests')
+            .insert({
+              user_id: user.id,
+              quest_id: matchingQuest.id,
+              status: 'pending',
+              assigned_date: new Date().toISOString().split('T')[0]
+            });
+          
+          toast.success(`Quest assigned: ${matchingQuest.title}!`);
+          console.log(`Fallback quest assignment successful`);
+        } catch (fallbackError) {
+          console.error('Fallback quest assignment failed:', fallbackError);
+        }
       }
+    } else {
+      console.log(`No matching quest found for emotion: ${emotion}, title: ${questTitle}`);
     }
   };
 
@@ -251,13 +309,17 @@ const EnhancedChatCompanion = () => {
       timestamp: new Date(),
     };
 
+    // Store current message for context processing
+    const messageToProcess = currentMessage;
+    
     setMessages(prev => [...prev, userMessage]);
     setCurrentMessage('');
     setIsTyping(true);
 
-    // Generate contextual response
+    // Generate contextual response with all current messages including the new one
     setTimeout(async () => {
-      const companionResponse = getContextualResponse(currentMessage, messages);
+      const updatedMessages = [...messages, userMessage];
+      const companionResponse = getContextualResponse(messageToProcess, updatedMessages);
       
       const companionMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -278,8 +340,11 @@ const EnhancedChatCompanion = () => {
             message: userMessage.content,
             response: companionMessage.content,
           });
+        
+        console.log('Chat saved successfully');
       } catch (error) {
         console.error('Error saving chat:', error);
+        toast.error('Failed to save conversation');
       }
     }, 1500 + Math.random() * 1000); // Realistic typing delay
   };
